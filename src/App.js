@@ -1,14 +1,197 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { loadProgress, recordAnswer, recordSessionStart, recordSessionEnd } from './lib/progress';
+import { loadParentSettings, saveParentSettings } from './lib/parentSettings';
+import { useSessionTimer } from './hooks/useSessionTimer';
 
 /**
- * Math Sprouts - A math app for children ages 3-8
- * Theme: Growth/Garden aesthetic with multiple game modes and customization
+ * Parent Panel Components
+ */
+
+const PINPad = ({ correctPin, onAuthenticated, onSetPin }) => {
+  const [input, setInput] = useState('');
+  const [error, setError] = useState(false);
+
+  const handleDigit = (digit) => {
+    if (input.length < 4) {
+      const newVal = input + digit;
+      setInput(newVal);
+      if (newVal.length === 4) {
+        if (!correctPin || newVal === correctPin) {
+          if (!correctPin) onSetPin(newVal);
+          onAuthenticated();
+        } else {
+          setError(true);
+          setTimeout(() => { setError(false); setInput(''); }, 600);
+        }
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      <p className="text-stone-600 font-black mb-4 uppercase tracking-widest text-xs">
+        {correctPin ? 'Enter Parent PIN' : 'Set Parent PIN'}
+      </p>
+      <div className="flex gap-2 mb-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className={`w-3 h-3 rounded-full border-2 transition-all ${input.length > i ? 'bg-stone-800 border-stone-800' : 'border-stone-300'} ${error ? 'bg-rose-500 border-rose-500 animate-shake' : ''}`} />
+        ))}
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '⌫'].map((btn) => (
+          <button
+            key={btn}
+            onClick={() => {
+              if (btn === 'C') setInput('');
+              else if (btn === '⌫') setInput(input.slice(0, -1));
+              else handleDigit(btn);
+            }}
+            className="w-12 h-12 rounded-full bg-stone-100 font-black text-stone-700 active:bg-stone-200 shadow-sm border-b-2 border-stone-300"
+          >
+            {btn}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ParentSummary = ({ stats }) => {
+  const accuracy = stats.totalQuestionsAnswered > 0 
+    ? Math.round((stats.totalCorrectAnswers / stats.totalQuestionsAnswered) * 100) 
+    : 0;
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[10px] font-black text-stone-400 uppercase">Accuracy</p>
+          <p className="text-xl font-black text-green-600">{accuracy}%</p>
+        </div>
+        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[10px] font-black text-stone-400 uppercase">Streak</p>
+          <p className="text-xl font-black text-orange-500">{stats.streakBest}</p>
+        </div>
+        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[10px] font-black text-stone-400 uppercase">Questions</p>
+          <p className="text-xl font-black text-stone-700">{stats.totalQuestionsAnswered}</p>
+        </div>
+        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[10px] font-black text-stone-400 uppercase">Play Time</p>
+          <p className="text-[13px] font-black text-stone-700">{formatTime(stats.totalPlayTimeSeconds)}</p>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-2xl border border-stone-100 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-stone-50 text-[9px] font-black uppercase text-stone-400">
+              <th className="p-2">Difficulty</th>
+              <th className="p-2 text-right">Done</th>
+              <th className="p-2 text-right">Correct</th>
+            </tr>
+          </thead>
+          <tbody className="text-[11px] font-bold text-stone-600">
+            {Object.entries(stats.perDifficultyStats).map(([diff, data]) => (
+              <tr key={diff} className="border-t border-stone-50">
+                <td className="p-2 capitalize">{diff}</td>
+                <td className="p-2 text-right">{data.answered}</td>
+                <td className="p-2 text-right">{data.correct}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const ParentSettingsPanel = ({ settings, onUpdate }) => {
+  const toggleLock = (key) => {
+    onUpdate({ ...settings, locks: { ...settings.locks, [key]: !settings.locks[key] } });
+  };
+
+  const toggleArray = (key, value) => {
+    const arr = settings[key];
+    const newArr = arr.includes(value) 
+      ? arr.length > 1 ? arr.filter(v => v !== value) : arr 
+      : [...arr, value];
+    onUpdate({ ...settings, [key]: newArr });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="text-[10px] font-black text-stone-400 uppercase mb-2">Session Limit</p>
+        <div className="flex flex-wrap gap-2">
+          {[0, 5, 10, 15, 20, 30].map(mins => (
+            <button
+              key={mins}
+              onClick={() => onUpdate({ ...settings, sessionTimeLimit: mins })}
+              className={`px-3 py-1.5 rounded-full text-[10px] font-black border-b-2 transition-all ${settings.sessionTimeLimit === mins ? 'bg-stone-800 text-white border-stone-900' : 'bg-stone-100 text-stone-500 border-stone-200'}`}
+            >
+              {mins === 0 ? 'None' : `${mins}m`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-stone-50 p-3 rounded-2xl flex items-center justify-between border-b-2 border-stone-200">
+        <div>
+          <p className="text-[11px] font-black text-stone-700">Gentle Stop</p>
+          <p className="text-[9px] text-stone-400 font-bold">Finish current question before break</p>
+        </div>
+        <button 
+          onClick={() => onUpdate({ ...settings, stopAfterCurrentQuestion: !settings.stopAfterCurrentQuestion })}
+          className={`w-10 h-5 rounded-full relative transition-colors ${settings.stopAfterCurrentQuestion ? 'bg-green-500' : 'bg-stone-300'}`}
+        >
+          <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${settings.stopAfterCurrentQuestion ? 'left-5.5' : 'left-0.5'}`} />
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-[10px] font-black text-stone-400 uppercase">Lock Settings</p>
+        {Object.entries({ theme: 'Theme', difficulty: 'Difficulty', gameMode: 'Game Mode' }).map(([key, label]) => (
+          <div key={key} className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-stone-600">{label}</span>
+            <button 
+              onClick={() => toggleLock(key)}
+              className={`p-1.5 rounded-lg transition-colors ${settings.locks[key] ? 'text-rose-500 bg-rose-50' : 'text-stone-300 hover:bg-stone-50'}`}
+            >
+              {settings.locks[key] ? '🔒' : '🔓'}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-2 pt-2 border-t border-stone-100">
+        <p className="text-[10px] font-black text-stone-400 uppercase">Allowed Themes</p>
+        <div className="flex gap-2">
+          {['garden', 'ocean', 'space'].map(t => (
+            <button key={t} onClick={() => toggleArray('allowedThemes', t)} className={`px-2 py-1 rounded-lg text-[9px] font-black capitalize border-b-2 transition-all ${settings.allowedThemes.includes(t) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-stone-50 text-stone-300 border-stone-100'}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Main App Component
  */
 function App() {
   // Global Game State
   const [gameMode, setGameMode] = useState('balance'); 
-  const [difficulty, setDifficulty] = useState('intermediate'); // 'beginner', 'intermediate', 'advanced'
-  const [theme, setTheme] = useState('garden'); // 'garden', 'ocean', 'space'
+  const [difficulty, setDifficulty] = useState('intermediate'); 
+  const [theme, setTheme] = useState('garden'); 
   const [problem, setProblem] = useState({ num1: 0, num2: 0, answer: 0, options: [], type: '+' });
   const [seeds, setSeeds] = useState(0); 
   const [level, setLevel] = useState(1);
@@ -18,6 +201,15 @@ function App() {
   const [currentTargetPlant, setCurrentTargetPlant] = useState('/assets/garden/plant-1.png');
   const [showResetModal, setShowResetModal] = useState(false);
   const [hintedOptionIndex, setHintedOptionIndex] = useState(null);
+
+  // Parent Controls State
+  const [parentSettings, setParentSettings] = useState(loadParentSettings());
+  const [stats, setStats] = useState(loadProgress());
+  const [showParentModal, setShowParentModal] = useState(false);
+  const [isParentAuthenticated, setIsParentAuthenticated] = useState(false);
+  const [parentActiveTab, setParentActiveTab] = useState('stats');
+  const [showSessionEnd, setShowSessionEnd] = useState(false);
+  const [pendingSessionEnd, setPendingSessionEnd] = useState(false);
 
   // Customization Assets
   const plantAssets = {
@@ -48,7 +240,8 @@ function App() {
       helper: '/assets/helper-bee.png',
       themeColor: 'bg-green-400',
       seedName: 'Sprout',
-      bud: '/assets/garden/plant-1.png'
+      bud: '/assets/garden/plant-1.png',
+      balanceAsset: '/assets/balance-seed.png'
     },
     ocean: {
       bg: 'bg-cyan-50',
@@ -61,8 +254,9 @@ function App() {
       mascot: '/assets/mascot-ocean.png',
       helper: '/assets/helper-fish.png',
       themeColor: 'bg-blue-400',
-      seedName: 'Pearl',
-      bud: '/assets/ocean/ocean-1.png'
+      seedName: 'Whale',
+      bud: '/assets/ocean/ocean-1.png',
+      balanceAsset: '/assets/balance-whale.png'
     },
     space: {
       bg: 'bg-slate-900',
@@ -76,55 +270,84 @@ function App() {
       mascot: '/assets/mascot-space.png',
       helper: '/assets/helper-stars.png',
       themeColor: 'bg-purple-600',
-      seedName: 'Star',
-      bud: '/assets/space/astro-1.png'
+      seedName: 'Asteroid',
+      bud: '/assets/space/astro-1.png',
+      balanceAsset: '/assets/balance-asteroid.png'
     }
   };
 
   const currentTheme = themeConfig[theme];
+
+  // Session Timer Hook
+  const handleTimeUp = useCallback(() => {
+    if (parentSettings.stopAfterCurrentQuestion) {
+      setPendingSessionEnd(true);
+    } else {
+      setShowSessionEnd(true);
+    }
+  }, [parentSettings.stopAfterCurrentQuestion]);
+
+  useSessionTimer(parentSettings.sessionTimeLimit, handleTimeUp);
+
+  // Initialize data on mount
+  useEffect(() => {
+    recordSessionStart();
+    const loadedSettings = loadParentSettings();
+    setParentSettings(loadedSettings);
+    
+    // Ensure initial settings respect locks
+    if (loadedSettings.allowedThemes.length > 0 && !loadedSettings.allowedThemes.includes(theme)) {
+      setTheme(loadedSettings.allowedThemes[0]);
+    }
+    if (loadedSettings.allowedDifficulties.length > 0 && !loadedSettings.allowedDifficulties.includes(difficulty)) {
+      setDifficulty(loadedSettings.allowedDifficulties[0]);
+    }
+    if (loadedSettings.allowedModes.length > 0 && !loadedSettings.allowedModes.includes(gameMode)) {
+      setGameMode(loadedSettings.allowedModes[0]);
+    }
+  }, []);
+
+  // Update Settings
+  const updateSettings = (newSettings) => {
+    setParentSettings(newSettings);
+    saveParentSettings(newSettings);
+  };
 
   // Generate a new problem based on level and difficulty
   const generateProblem = (currentLevel = level, currentDiff = difficulty) => {
     let n1, n2, correctAnswer, type = '+';
     let max = 10;
 
-    // Difficulty adjusters for base numbers
     if (currentDiff === 'beginner') max = 5;
     if (currentDiff === 'intermediate') max = 15;
     if (currentDiff === 'advanced') max = 30;
 
     if (currentLevel === 1) {
-      // Level 1: Addition (1-max)
       correctAnswer = Math.floor(Math.random() * (max - 1)) + 2;
       n1 = Math.floor(Math.random() * (correctAnswer - 1)) + 1;
       n2 = correctAnswer - n1;
     } else if (currentLevel === 2) {
-      // Level 2: Addition (larger range)
       const levelMax = Math.floor(max * 1.5);
       correctAnswer = Math.floor(Math.random() * (levelMax - 1)) + 2;
       n1 = Math.floor(Math.random() * (correctAnswer - 1)) + 1;
       n2 = correctAnswer - n1;
     } else if (currentLevel === 3) {
-      // Level 3: Subtraction (positive results)
       type = '-';
       n1 = Math.floor(Math.random() * max) + 5;
       n2 = Math.floor(Math.random() * n1) + 1;
       correctAnswer = n1 - n2;
     } else if (currentLevel === 4) {
-      // Level 4: Subtraction (includes negative numbers)
       type = '-';
       n1 = Math.floor(Math.random() * max);
       n2 = Math.floor(Math.random() * max);
       correctAnswer = n1 - n2;
     } else if (currentLevel === 5) {
-      // Level 5: Single Digit Multiplication
       type = '×';
       const multMax = currentDiff === 'beginner' ? 5 : currentDiff === 'intermediate' ? 9 : 12;
       n1 = Math.floor(Math.random() * multMax) + 1;
       n2 = Math.floor(Math.random() * multMax) + 1;
       correctAnswer = n1 * n2;
     } else if (currentLevel === 6) {
-      // Level 6: Multiplication & Division
       const isDiv = Math.random() > 0.5;
       if (isDiv) {
         type = '÷';
@@ -140,7 +363,6 @@ function App() {
         correctAnswer = n1 * n2;
       }
     } else if (currentLevel === 7) {
-      // Level 7: Addition & Subtraction Mix (larger numbers)
       const isAdd = Math.random() > 0.5;
       type = isAdd ? '+' : '-';
       const mixMax = max * 2;
@@ -154,13 +376,11 @@ function App() {
         correctAnswer = n1 - n2;
       }
     } else if (currentLevel === 8) {
-      // Level 8: Multiplication Table Challenge
       type = '×';
       n1 = currentDiff === 'beginner' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 10) + 5;
       n2 = Math.floor(Math.random() * 10) + 1;
       correctAnswer = n1 * n2;
     } else {
-      // Level 9: Ultimate Mix
       const rand = Math.random();
       if (rand < 0.25) {
         type = '+'; n1 = Math.floor(Math.random() * 50); n2 = Math.floor(Math.random() * 50); correctAnswer = n1 + n2;
@@ -175,7 +395,7 @@ function App() {
 
     const optionsSet = new Set([correctAnswer]);
     while (optionsSet.size < 3) {
-      const offset = Math.floor(Math.random() * 11) - 5; // +/- 5
+      const offset = Math.floor(Math.random() * 11) - 5;
       const fake = correctAnswer + offset;
       if (fake !== correctAnswer) optionsSet.add(fake);
       if (optionsSet.size < 3) optionsSet.add(correctAnswer + (Math.random() > 0.5 ? 10 : -10));
@@ -188,23 +408,30 @@ function App() {
     setHintedOptionIndex(null);
   };
 
-  // Initialize first problem
   useEffect(() => {
     generateProblem();
   }, []);
 
-  // Update target plant ONLY when theme changes or level completes
   useEffect(() => {
     setCurrentTargetPlant(plantAssets[theme][Math.floor(Math.random() * plantAssets[theme].length)]);
   }, [theme]);
 
-  // Difficulty change should only update problem range, not target plant
   useEffect(() => {
     generateProblem();
   }, [difficulty]);
 
   const handleAnswer = (selected) => {
-    if (selected === problem.answer) {
+    const isCorrect = selected === problem.answer;
+    
+    // Record Progress
+    const updatedStats = recordAnswer({ 
+      correct: isCorrect, 
+      difficulty, 
+      mode: gameMode 
+    });
+    setStats(updatedStats);
+
+    if (isCorrect) {
       setFeedback({ message: 'Correct!', type: 'success' });
       setIsAnimating(true);
       const newSeeds = seeds + 1;
@@ -218,18 +445,28 @@ function App() {
         });
         setSeeds(10);
         setTimeout(() => {
+          if (pendingSessionEnd) {
+            setShowSessionEnd(true);
+            return;
+          }
           setGarden(prev => [...prev, currentTargetPlant]);
           const nextLevel = level < 9 ? level + 1 : 1;
           setLevel(nextLevel);
           setSeeds(0);
-          // Pick a new target plant for the NEXT level
           setCurrentTargetPlant(plantAssets[theme][Math.floor(Math.random() * plantAssets[theme].length)]);
           setIsAnimating(false);
           generateProblem(nextLevel);
         }, 2000);
       } else {
         setSeeds(newSeeds);
-        setTimeout(() => { setIsAnimating(false); generateProblem(); }, 1000);
+        setTimeout(() => { 
+          if (pendingSessionEnd) {
+            setShowSessionEnd(true);
+            return;
+          }
+          setIsAnimating(false); 
+          generateProblem(); 
+        }, 1000);
       }
     } else {
       setFeedback({ message: 'Try again!', type: 'error' });
@@ -259,35 +496,55 @@ function App() {
   return (
     <div className={`h-[100dvh] ${currentTheme.bg} flex flex-col items-center p-3 font-sans ${currentTheme.textColor || 'text-stone-800'} overflow-hidden relative transition-colors duration-500`}>
       
+      {/* Parent Access Button */}
+      <button 
+        onClick={() => { setShowParentModal(true); setIsParentAuthenticated(false); }}
+        className="fixed left-2 top-2 z-40 bg-white/40 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white/60 transition-all border border-white/20"
+      >
+        <span className="text-sm">⚙️</span>
+      </button>
+
       {/* Side Difficulty Toggle */}
       <div className="fixed left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-40">
         {['beginner', 'intermediate', 'advanced'].map((d) => (
-          <button
-            key={d}
-            onClick={() => setDifficulty(d)}
-            className={`w-8 h-8 rounded-xl flex items-center justify-center text-[9px] font-black uppercase transition-all shadow-md border-b-2 
-            ${difficulty === d ? 'bg-green-500 text-white scale-105 border-green-700' : 'bg-white text-stone-400 border-stone-200'}`}
-            title={d}
-          >
-            {d[0]}
-          </button>
+          <div key={d} className="relative group">
+            <button
+              disabled={parentSettings.locks.difficulty || !parentSettings.allowedDifficulties.includes(d)}
+              onClick={() => setDifficulty(d)}
+              className={`w-8 h-8 rounded-xl flex items-center justify-center text-[9px] font-black uppercase transition-all shadow-md border-b-2 
+              ${difficulty === d ? 'bg-green-500 text-white scale-105 border-green-700' : 'bg-white text-stone-400 border-stone-200'}
+              ${parentSettings.locks.difficulty ? 'opacity-50 cursor-not-allowed' : ''}
+              ${!parentSettings.allowedDifficulties.includes(d) ? 'hidden' : ''}`}
+            >
+              {d[0]}
+            </button>
+            {parentSettings.locks.difficulty && difficulty === d && (
+              <span className="absolute -right-2 -top-1 text-[8px] drop-shadow-sm">🔒</span>
+            )}
+          </div>
         ))}
       </div>
 
       {/* Style Panel */}
-      <div className="fixed right-2 top-2 z-40">
-        <div className="bg-stone-800 p-1.5 rounded-full shadow-xl flex flex-col gap-2 border-2 border-stone-700">
+      <div className="fixed right-2 top-2 z-40 flex flex-col items-center">
+        <div className="bg-stone-800 p-1.5 rounded-full shadow-xl flex flex-col gap-2 border-2 border-stone-700 relative">
           {['garden', 'ocean', 'space'].map((t) => (
             <button
               key={t}
+              disabled={parentSettings.locks.theme || !parentSettings.allowedThemes.includes(t)}
               onClick={() => setTheme(t)}
               className={`w-5 h-5 rounded-full transition-all duration-300 relative
               ${theme === t 
                 ? `${themeConfig[t].themeColor} shadow-[0_0_10px_rgba(255,255,255,0.4)] scale-110` 
-                : 'bg-stone-600 opacity-40'}`}
+                : 'bg-stone-600 opacity-40'}
+              ${!parentSettings.allowedThemes.includes(t) ? 'hidden' : ''}`}
             />
           ))}
+          {parentSettings.locks.theme && (
+            <span className="absolute -left-1 -top-1 text-[8px] drop-shadow-sm">🔒</span>
+          )}
         </div>
+        <span className={`text-[7px] font-black mt-1 uppercase tracking-widest ${theme === 'space' ? 'text-slate-400' : 'text-stone-400'}`}>Theme</span>
       </div>
       
       {/* Header */}
@@ -306,25 +563,29 @@ function App() {
         </div>
 
         {/* Game Mode Switcher */}
-        <div className="flex bg-white/50 p-0.5 rounded-full border border-green-100 shadow-sm mb-1">
+        <div className="flex bg-white/50 p-0.5 rounded-full border border-green-100 shadow-sm mb-1 relative">
           {['balance', 'garden', 'pollinator'].map(m => (
             <button 
               key={m}
+              disabled={parentSettings.locks.gameMode || !parentSettings.allowedModes.includes(m)}
               onClick={() => setGameMode(m)}
               className={`px-2.5 py-0.5 rounded-full text-[8px] font-bold transition-all whitespace-nowrap 
-              ${gameMode === m ? 'bg-green-500 text-white shadow-sm' : 'text-green-700 hover:bg-green-100'}`}
+              ${gameMode === m ? 'bg-green-500 text-white shadow-sm' : 'text-green-700 hover:bg-green-100'}
+              ${!parentSettings.allowedModes.includes(m) ? 'hidden' : ''}`}
             >
               {m.charAt(0).toUpperCase() + m.slice(1)}
             </button>
           ))}
+          {parentSettings.locks.gameMode && (
+            <span className="absolute -right-1 -top-1 text-[8px]">🔒</span>
+          )}
         </div>
       </header>
 
       {/* Main Game Area */}
       <main className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-3 py-1 overflow-hidden">
         
-        {/* Problem Display */}
-        <div className={`bg-white rounded-2xl p-4 shadow-lg border-b-4 ${currentTheme.problemBorder} w-full text-center relative z-10 shrink-0`}>
+        <div className={`bg-white rounded-2xl p-4 shadow-lg border-b-4 ${currentTheme.problemBorder} w-full text-center relative z-10 shrink-0 transition-transform ${feedback.type === 'error' ? 'animate-shake' : ''}`}>
           <h2 className="text-4xl font-black text-stone-700 mb-1">
             {problem.num1} {problem.type} {problem.num2} = ?
           </h2>
@@ -347,26 +608,26 @@ function App() {
           </button>
         </div>
 
-        {/* Answer Buttons */}
-        <div className="flex gap-2.5 relative z-10 shrink-0">
+        <div className="flex gap-2.5 relative z-10 shrink-0 transition-all duration-500 ease-in-out">
           {problem.options.map((option, index) => (
             <button
               key={index}
               onClick={() => handleAnswer(option)}
-              disabled={hintedOptionIndex === index || isAnimating}
+              disabled={isAnimating}
               className={`
-                w-14 h-14 rounded-full text-xl font-bold text-white shadow-md
-                transform transition-all duration-200 active:scale-95
+                rounded-full text-xl font-bold text-white shadow-md
+                transform transition-all duration-500 ease-in-out active:scale-95
                 ${currentTheme.btnColors[index]}
-                ${hintedOptionIndex === index ? 'opacity-20 grayscale pointer-events-none' : ''}
+                ${hintedOptionIndex === index 
+                  ? 'opacity-0 scale-0 w-0 h-0 m-0 pointer-events-none p-0 border-0' 
+                  : 'w-14 h-14'}
               `}
             >
-              {option}
+              {hintedOptionIndex === index ? null : option}
             </button>
           ))}
         </div>
 
-        {/* Game Views */}
         <div className="w-full flex-1 flex items-center justify-center min-h-0">
           {gameMode === 'balance' && (
             <div className="w-full relative h-40 flex flex-col items-center justify-center">
@@ -374,18 +635,19 @@ function App() {
                 <div className="absolute bottom-0 w-full h-1/2 bg-blue-300/30 blur-[1px]"></div>
               </div>
               <div className="absolute bottom-[35px] w-full max-w-[280px] h-4 bg-yellow-100 border-2 border-yellow-200 rounded-full transition-transform duration-700 ease-in-out origin-center flex items-center justify-between px-2 shadow-sm" style={{ transform: `rotate(${tiltAngle}deg)` }}>
-                <div className="relative w-20 h-20 -mt-20 -ml-4 flex flex-wrap-reverse gap-0 items-end justify-center p-1">
+                <div className="relative w-28 h-28 -mt-28 -ml-8 flex flex-wrap-reverse gap-0 items-end justify-center p-1">
                   {[...Array(seeds)].map((_, i) => (
-                    <img 
-                      key={i} 
-                      src="/assets/balance-seed.png" 
-                      alt="seed" 
-                      className={`w-5 h-5 ${i === seeds - 1 && isAnimating ? 'animate-fall-lightly' : 'animate-bounce-light'}`} 
-                      style={{ 
-                        animationDelay: i === seeds - 1 && isAnimating ? '0s' : `${i * 0.1}s`, 
-                        transform: `rotate(${-tiltAngle}deg)` 
-                      }} 
-                    />
+                    <div key={i} className="w-1/3 flex justify-center items-end h-8">
+                      <img 
+                        src={currentTheme.balanceAsset} 
+                        alt="seed" 
+                        className={`w-10 h-10 ${i === seeds - 1 && isAnimating ? 'animate-fall-lightly' : 'animate-bounce-light'}`} 
+                        style={{ 
+                          animationDelay: i === seeds - 1 && isAnimating ? '0s' : `${i * 0.1}s`, 
+                          transform: `rotate(${-tiltAngle}deg)` 
+                        }} 
+                      />
+                    </div>
                   ))}
                 </div>
                 <div className="relative w-20 h-20 -mt-20 -mr-4 flex flex-col items-center justify-end pb-1">
@@ -417,8 +679,11 @@ function App() {
                     <img 
                       src={currentTargetPlant} 
                       alt="pollinator plant" 
-                      className={`w-24 h-24 object-contain drop-shadow-lg transition-all duration-1000 
-                      ${seeds < 10 ? 'filter saturate-[0.2] brightness-125 scale-75' : 'filter saturate-100'}`}
+                      style={{ 
+                        filter: `saturate(${0.2 + (seeds * 0.08)}) brightness(${0.8 + (seeds * 0.04)})`,
+                        transform: `scale(${0.75 + (seeds * 0.025)})`
+                      }}
+                      className={`w-24 h-24 object-contain drop-shadow-lg transition-all duration-1000`}
                     />
                   </div>
                 </div>
@@ -428,7 +693,7 @@ function App() {
                 {[...Array(seeds)].map((_, i) => (
                   <div key={i} className="absolute w-full h-full animate-bee-circle" style={{ animationDuration: `${3 + (i % 2)}s`, animationDelay: `${-i * 0.5}s`, zIndex: 10 }}>
                     <div className="absolute left-1/2 top-0" style={{ transform: 'translateX(-50%)' }}>
-                      <img src={currentTheme.helper} alt="helper" className="w-8 h-8 object-contain" />
+                      <img src={currentTheme.helper} alt="helper" className={`object-contain ${theme === 'space' ? 'w-10 h-10' : 'w-8 h-8'}`} />
                     </div>
                   </div>
                 ))}
@@ -453,7 +718,7 @@ function App() {
         <button onClick={() => setShowResetModal(true)} className="absolute top-1 right-2 text-[7px] font-bold text-stone-300 hover:text-stone-500 uppercase tracking-tighter">Reset</button>
       </div>
 
-      {/* Shared Footer */}
+      {/* Footer */}
       <footer className="w-full max-w-md pb-2 pt-1.5 bg-white px-3 rounded-b-2xl shadow-xl border-x-2 border-b-2 border-stone-200 shrink-0">
         <div className="flex justify-between items-end mb-0.5 px-1">
           <span className="text-[8px] font-black text-stone-500 uppercase tracking-wider">Progress</span>
@@ -477,6 +742,75 @@ function App() {
         </div>
       )}
 
+      {/* Parent Modal */}
+      {showParentModal && (
+        <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-bubble-pop flex flex-col max-h-[90vh]">
+            <header className="p-6 pb-2 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-black text-stone-800 tracking-tight">Parent Controls</h2>
+                {isParentAuthenticated && (
+                  <div className="flex gap-4 mt-2">
+                    <button onClick={() => setParentActiveTab('stats')} className={`text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'stats' ? 'text-green-600' : 'text-stone-400'}`}>Stats</button>
+                    <button onClick={() => setParentActiveTab('settings')} className={`text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'settings' ? 'text-green-600' : 'text-stone-400'}`}>Settings</button>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setShowParentModal(false)} className="w-10 h-10 bg-stone-100 rounded-full flex items-center justify-center font-black text-stone-400">✕</button>
+            </header>
+
+            <div className="flex-1 p-6 pt-2 overflow-y-auto">
+              {!isParentAuthenticated ? (
+                <PINPad 
+                  correctPin={parentSettings.pin} 
+                  onAuthenticated={() => setIsParentAuthenticated(true)}
+                  onSetPin={(pin) => updateSettings({ ...parentSettings, pin })}
+                />
+              ) : (
+                <>
+                  {parentActiveTab === 'stats' ? (
+                    <ParentSummary stats={stats} />
+                  ) : (
+                    <ParentSettingsPanel 
+                      settings={parentSettings} 
+                      onUpdate={updateSettings}
+                    />
+                  )}
+                  <div className="mt-8 pt-4 border-t border-stone-100 flex justify-center">
+                    <button 
+                      onClick={() => {
+                        const newPin = prompt('Enter new 4-digit PIN:');
+                        if (newPin && newPin.length === 4) updateSettings({ ...parentSettings, pin: newPin });
+                      }}
+                      className="text-[9px] font-black text-stone-300 uppercase tracking-widest hover:text-stone-500"
+                    >
+                      Change PIN
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Session End Overlay */}
+      {showSessionEnd && (
+        <div className="fixed inset-0 bg-green-500 z-[200] flex flex-col items-center justify-center p-8 text-center animate-bubble-pop">
+          <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-6">
+            <img src={currentTheme.mascot} alt="mascot" className="w-20 h-20 object-contain" />
+          </div>
+          <h2 className="text-4xl font-black text-white mb-4 leading-tight">Great job!<br/>Time for a break 🌱</h2>
+          <p className="text-green-100 font-bold mb-8 opacity-80">You've reached your daily math goal. See you next time!</p>
+          <button 
+            onClick={() => { setShowSessionEnd(false); setPendingSessionEnd(false); }}
+            className="bg-white text-green-600 font-black px-8 py-3 rounded-2xl shadow-xl border-b-4 border-green-100 active:scale-95 transition-all"
+          >
+            I'm Done
+          </button>
+        </div>
+      )}
+
       <style>{`
         @keyframes water-wobble { 0%, 100% { transform: scale(1, 1) translateY(0); } 25% { transform: scale(1.1, 0.9) translateY(1px); } 50% { transform: scale(0.9, 1.1) translateY(-1px); } 75% { transform: scale(1.05, 0.95) translateY(0.5px); } }
         .animate-water-wobble { animation: water-wobble 0.8s ease-in-out; }
@@ -484,9 +818,28 @@ function App() {
         .animate-bee-circle { animation: bee-circle linear infinite; }
         @keyframes bubble-pop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
         .animate-bubble-pop { animation: bubble-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes fall-lightly { 0% { transform: translateY(-80px); opacity: 0; } 60% { transform: translateY(3px); opacity: 1; } 100% { transform: translateY(0); } }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-5px); }
+          80% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.5s ease-in-out; }
+
+        @keyframes fall-lightly {
+          0% { transform: translateY(-80px); opacity: 0; }
+          60% { transform: translateY(3px); opacity: 1; }
+          80% { transform: translateY(-1px); }
+          100% { transform: translateY(0); }
+        }
         .animate-fall-lightly { animation: fall-lightly 0.8s ease-out forwards; }
-        @keyframes bounce-light { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+        
+        @keyframes bounce-light {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-2px); }
+        }
         .animate-bounce-light { animation: bounce-light 2s infinite ease-in-out; }
       `}</style>
     </div>
