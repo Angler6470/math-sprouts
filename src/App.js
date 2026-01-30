@@ -201,6 +201,8 @@ function App() {
   const [currentTargetPlant, setCurrentTargetPlant] = useState('/assets/garden/plant-1.png');
   const [showResetModal, setShowResetModal] = useState(false);
   const [hintedOptionIndex, setHintedOptionIndex] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   // Parent Controls State
   const [parentSettings, setParentSettings] = useState(loadParentSettings());
@@ -305,7 +307,37 @@ function App() {
     if (loadedSettings.allowedModes.length > 0 && !loadedSettings.allowedModes.includes(gameMode)) {
       setGameMode(loadedSettings.allowedModes[0]);
     }
+
+    // PWA Install Prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    });
+
+    window.addEventListener('appinstalled', () => {
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+      console.log('Math Sprouts was installed');
+    });
+
+    // Check if it's iOS and not already installed
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isIOS && !isStandalone) {
+      setShowInstallBanner(true);
+    }
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+    }
+  };
 
   // Update Settings
   const updateSettings = (newSettings) => {
@@ -549,13 +581,13 @@ function App() {
       
       {/* Header */}
       <header className="w-full max-w-md flex flex-col items-center mt-1 shrink-0">
-        <div className="flex items-center gap-2 mb-1">
-          <div className={`w-10 h-10 ${currentTheme.headerBg} rounded-full flex items-center justify-center shadow-inner border-2 ${currentTheme.headerBorder} overflow-hidden`}>
-            <img src={currentTheme.mascot} alt="mascot" className="w-8 h-8 object-contain" />
+        <div className="flex items-center gap-3 mb-1">
+          <div className={`w-16 h-16 ${currentTheme.headerBg} rounded-full flex items-center justify-center shadow-inner border-2 ${currentTheme.headerBorder} overflow-hidden`}>
+            <img src={currentTheme.mascot} alt="mascot" className="w-14 h-14 object-contain" />
           </div>
           <div>
-            <h1 className={`text-lg font-black ${currentTheme.accent} tracking-tight leading-none`}>Math Sprouts</h1>
-            <div className={`mt-0.5 px-2 py-0 rounded-full text-[7px] font-black text-white uppercase inline-block
+            <h1 className={`text-3xl font-normal ${currentTheme.accent} tracking-tight leading-none`} style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Math Sprouts</h1>
+            <div className={`mt-1 px-3 py-0.5 rounded-full text-[9px] font-black text-white uppercase inline-block
               ${level <= 3 ? 'bg-yellow-500' : level <= 6 ? 'bg-orange-500' : 'bg-rose-600'}`}>
               Level {level}
             </div>
@@ -589,9 +621,9 @@ function App() {
           <h2 className="text-4xl font-black text-stone-700 mb-1">
             {problem.num1} {problem.type} {problem.num2} = ?
           </h2>
-          <div className={`h-6 flex items-center justify-center transition-opacity duration-300 ${feedback.message ? 'opacity-100' : 'opacity-0'}`}>
-            <img src={feedback.type === 'success' ? '/assets/feedback-success.png' : '/assets/feedback-error.png'} alt={feedback.type} className="w-4 h-4 mr-1.5" />
-            <p className={`text-sm font-bold ${feedback.type === 'success' ? 'text-green-500' : 'text-orange-400'}`}>
+          <div className={`h-14 flex items-center justify-center transition-all duration-300 ${feedback.message ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+            <img src={feedback.type === 'success' ? '/assets/feedback-success.png' : '/assets/feedback-error.png'} alt={feedback.type} className="w-12 h-12 mr-3 drop-shadow-md" />
+            <p className={`text-xl font-black ${feedback.type === 'success' ? 'text-green-500' : 'text-orange-400'}`}>
               {feedback.message}
             </p>
           </div>
@@ -704,6 +736,39 @@ function App() {
         </div>
       </main>
 
+      {/* PWA Install Banner */}
+      {showInstallBanner && (
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-3 mb-2 border-2 border-green-200 shadow-lg flex items-center justify-between animate-bubble-pop z-[60]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center border-2 border-green-200 shrink-0">
+              <img src="/logo192.png" alt="logo" className="w-8 h-8 object-contain" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-stone-700">Install Math Sprouts</p>
+              <p className="text-[9px] text-stone-500 font-bold">
+                {deferredPrompt ? 'Add to home screen for offline play!' : 'Tap Share then "Add to Home Screen"'}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {deferredPrompt && (
+              <button 
+                onClick={handleInstallClick}
+                className="bg-green-500 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-sm border-b-2 border-green-600 active:scale-95"
+              >
+                Install
+              </button>
+            )}
+            <button 
+              onClick={() => setShowInstallBanner(false)}
+              className="text-stone-400 p-1 hover:bg-stone-50 rounded-lg transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Shared Garden Visuals */}
       <div className="w-full max-w-md bg-stone-100/90 rounded-t-2xl p-2.5 border-t-2 border-green-200 min-h-[80px] shrink-0 shadow-lg relative">
         <p className="text-center text-stone-500 text-[8px] font-black uppercase tracking-widest mb-1.5">My Collection</p>
@@ -797,10 +862,10 @@ function App() {
       {/* Session End Overlay */}
       {showSessionEnd && (
         <div className="fixed inset-0 bg-green-500 z-[200] flex flex-col items-center justify-center p-8 text-center animate-bubble-pop">
-          <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-6">
-            <img src={currentTheme.mascot} alt="mascot" className="w-20 h-20 object-contain" />
+          <div className={`w-40 h-40 ${currentTheme.headerBg} rounded-full flex items-center justify-center mb-6 shadow-2xl border-4 ${currentTheme.headerBorder}`}>
+            <img src={currentTheme.mascot} alt="mascot" className="w-32 h-32 object-contain" />
           </div>
-          <h2 className="text-4xl font-black text-white mb-4 leading-tight">Great job!<br/>Time for a break 🌱</h2>
+          <h2 className="text-4xl font-black text-white mb-4 leading-tight" style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Great job!<br/>Time for a break 🌱</h2>
           <p className="text-green-100 font-bold mb-8 opacity-80">You've reached your daily math goal. See you next time!</p>
           <button 
             onClick={() => { setShowSessionEnd(false); setPendingSessionEnd(false); }}
