@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { loadProgress, recordAnswer, recordSessionStart, recordSessionEnd } from './lib/progress';
 import { loadParentSettings, saveParentSettings } from './lib/parentSettings';
 import { useSessionTimer } from './hooks/useSessionTimer';
@@ -229,6 +229,8 @@ function App() {
     ]
   };
 
+  const plantAssetsRef = useRef(plantAssets);
+
   const themeConfig = {
     garden: {
       bg: 'bg-green-50',
@@ -289,23 +291,22 @@ function App() {
     }
   }, [parentSettings.stopAfterCurrentQuestion]);
 
-  useSessionTimer(parentSettings.sessionTimeLimit, handleTimeUp);
+  const { elapsedSeconds } = useSessionTimer(parentSettings.sessionTimeLimit, handleTimeUp);
 
   // Initialize data on mount
   useEffect(() => {
     recordSessionStart();
     const loadedSettings = loadParentSettings();
     setParentSettings(loadedSettings);
-    
-    // Ensure initial settings respect locks
-    if (loadedSettings.allowedThemes.length > 0 && !loadedSettings.allowedThemes.includes(theme)) {
-      setTheme(loadedSettings.allowedThemes[0]);
+    // Ensure initial settings respect locks using functional updates
+    if (loadedSettings.allowedThemes.length > 0) {
+      setTheme(prev => loadedSettings.allowedThemes.includes(prev) ? prev : loadedSettings.allowedThemes[0]);
     }
-    if (loadedSettings.allowedDifficulties.length > 0 && !loadedSettings.allowedDifficulties.includes(difficulty)) {
-      setDifficulty(loadedSettings.allowedDifficulties[0]);
+    if (loadedSettings.allowedDifficulties.length > 0) {
+      setDifficulty(prev => loadedSettings.allowedDifficulties.includes(prev) ? prev : loadedSettings.allowedDifficulties[0]);
     }
-    if (loadedSettings.allowedModes.length > 0 && !loadedSettings.allowedModes.includes(gameMode)) {
-      setGameMode(loadedSettings.allowedModes[0]);
+    if (loadedSettings.allowedModes.length > 0) {
+      setGameMode(prev => loadedSettings.allowedModes.includes(prev) ? prev : loadedSettings.allowedModes[0]);
     }
 
     // PWA Install Prompt
@@ -346,7 +347,7 @@ function App() {
   };
 
   // Generate a new problem based on level and difficulty
-  const generateProblem = (currentLevel = level, currentDiff = difficulty) => {
+  const generateProblem = useCallback((currentLevel = level, currentDiff = difficulty) => {
     let n1, n2, correctAnswer, type = '+';
     let max = 10;
 
@@ -438,19 +439,15 @@ function App() {
     setProblem({ num1: n1, num2: n2, answer: correctAnswer, options: optionsArray, type });
     setFeedback({ message: '', type: '' });
     setHintedOptionIndex(null);
-  };
+  }, [level, difficulty]);
 
   useEffect(() => {
     generateProblem();
-  }, []);
+  }, [generateProblem]);
 
   useEffect(() => {
-    setCurrentTargetPlant(plantAssets[theme][Math.floor(Math.random() * plantAssets[theme].length)]);
+    setCurrentTargetPlant(plantAssetsRef.current[theme][Math.floor(Math.random() * plantAssetsRef.current[theme].length)]);
   }, [theme]);
-
-  useEffect(() => {
-    generateProblem();
-  }, [difficulty]);
 
   const handleAnswer = (selected) => {
     const isCorrect = selected === problem.answer;
@@ -485,7 +482,7 @@ function App() {
           const nextLevel = level < 9 ? level + 1 : 1;
           setLevel(nextLevel);
           setSeeds(0);
-          setCurrentTargetPlant(plantAssets[theme][Math.floor(Math.random() * plantAssets[theme].length)]);
+          setCurrentTargetPlant(plantAssetsRef.current[theme][Math.floor(Math.random() * plantAssetsRef.current[theme].length)]);
           setIsAnimating(false);
           generateProblem(nextLevel);
         }, 2000);
@@ -868,7 +865,7 @@ function App() {
           <h2 className="text-4xl font-black text-white mb-4 leading-tight" style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Great job!<br/>Time for a break 🌱</h2>
           <p className="text-green-100 font-bold mb-8 opacity-80">You've reached your daily math goal. See you next time!</p>
           <button 
-            onClick={() => { setShowSessionEnd(false); setPendingSessionEnd(false); }}
+            onClick={() => { recordSessionEnd(elapsedSeconds); setShowSessionEnd(false); setPendingSessionEnd(false); }}
             className="bg-white text-green-600 font-black px-8 py-3 rounded-2xl shadow-xl border-b-4 border-green-100 active:scale-95 transition-all"
           >
             I'm Done

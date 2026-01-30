@@ -15,8 +15,10 @@ export const useSessionTimer = (timeLimitMinutes, onTimeUp) => {
       setIsActive(document.visibilityState === 'visible');
     };
 
+    const startTime = startTimeRef.current; // capture start time for stable cleanup
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     timerRef.current = setInterval(() => {
       if (document.visibilityState === 'visible') {
         setElapsedSeconds(prev => prev + 1);
@@ -26,8 +28,8 @@ export const useSessionTimer = (timeLimitMinutes, onTimeUp) => {
     return () => {
       clearInterval(timerRef.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      // Record time when hook unmounts
-      const sessionDuration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      // Record time when hook unmounts using the captured start time
+      const sessionDuration = Math.floor((Date.now() - startTime) / 1000);
       recordSessionEnd(sessionDuration);
     };
   }, []);
