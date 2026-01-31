@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { loadProgress, recordAnswer, recordSessionStart, recordSessionEnd } from './lib/progress';
 import { loadParentSettings, saveParentSettings } from './lib/parentSettings';
 import { useSessionTimer } from './hooks/useSessionTimer';
+import SplashScreen from './components/SplashScreen';
+import HelpModal from './components/HelpModal';
 
 /**
  * Parent Panel Components
@@ -200,6 +202,8 @@ function App() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentTargetPlant, setCurrentTargetPlant] = useState('/assets/garden/plant-1.png');
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showSplash, setShowSplash] = useState(() => sessionStorage.getItem('mathsprouts_seen_splash') !== '1');
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [hintedOptionIndex, setHintedOptionIndex] = useState(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -524,6 +528,9 @@ function App() {
 
   return (
     <div className={`h-[100dvh] ${currentTheme.bg} flex flex-col items-center p-3 font-sans ${currentTheme.textColor || 'text-stone-800'} overflow-hidden relative transition-colors duration-500`}>
+      {showSplash && (
+        <SplashScreen onFinish={() => { sessionStorage.setItem('mathsprouts_seen_splash', '1'); setShowSplash(false); }} />
+      )}
       
       {/* Parent Access Button */}
       <button 
@@ -812,9 +819,12 @@ function App() {
               <div>
                 <h2 className="text-2xl font-black text-stone-800 tracking-tight">Parent Controls</h2>
                 {isParentAuthenticated && (
-                  <div className="flex gap-4 mt-2">
+                  <div className="flex gap-4 mt-2 items-center">
                     <button onClick={() => setParentActiveTab('stats')} className={`text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'stats' ? 'text-green-600' : 'text-stone-400'}`}>Stats</button>
                     <button onClick={() => setParentActiveTab('settings')} className={`text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'settings' ? 'text-green-600' : 'text-stone-400'}`}>Settings</button>
+                    {parentActiveTab === 'settings' && (
+                      <button onClick={() => setShowHelpModal(true)} className="ml-2 w-7 h-7 bg-stone-100 rounded-full flex items-center justify-center font-black text-stone-500">?</button>
+                    )}
                   </div>
                 )}
               </div>
@@ -854,6 +864,11 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <HelpModal onClose={() => setShowHelpModal(false)} />
       )}
 
       {/* Session End Overlay */}
