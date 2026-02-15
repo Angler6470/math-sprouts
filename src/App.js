@@ -4,6 +4,7 @@ import { loadParentSettings, saveParentSettings } from './lib/parentSettings';
 import { useSessionTimer } from './hooks/useSessionTimer';
 import SplashScreen from './components/SplashScreen';
 import HelpModal from './components/HelpModal';
+import { pack } from './content/math';
 
 /**
  * Parent Panel Components
