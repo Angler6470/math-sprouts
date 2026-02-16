@@ -247,7 +247,7 @@ function App() {
       progressGradient: 'from-green-400 to-yellow-400',
       mascot: '/assets/mascot-garden.png',
       helper: '/assets/helper-bee.png',
-      themeColor: 'bg-green-400',
+      helper: '/assets/helper-stars.png',
       seedName: 'Sprout',
       bud: '/assets/garden/plant-1.png',
       balanceAsset: '/assets/balance-seed.png'
