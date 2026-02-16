@@ -201,7 +201,7 @@ function App() {
   const [garden, setGarden] = useState([]); 
   const [feedback, setFeedback] = useState({ message: '', type: '' });
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentTargetPlant, setCurrentTargetPlant] = useState('/assets/garden/plant-1.png');
+  const [currentTargetPlant, setCurrentTargetPlant] = useState('/assets/garden/collectible-1.png');
   const [showResetModal, setShowResetModal] = useState(false);
   const [showSplash, setShowSplash] = useState(() => sessionStorage.getItem('mathsprouts_seen_splash') !== '1');
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -221,16 +221,16 @@ function App() {
   // Customization Assets
   const plantAssets = {
     garden: [
-      '/assets/garden/plant-1.png', '/assets/garden/plant-2.png', '/assets/garden/plant-3.png', '/assets/garden/plant-4.png',
-      '/assets/garden/plant-5.png', '/assets/garden/plant-6.png', '/assets/garden/plant-7.png', '/assets/garden/plant-8.png'
+      '/assets/garden/collectible-1.png', '/assets/garden/collectible-2.png', '/assets/garden/collectible-3.png', '/assets/garden/collectible-4.png',
+      '/assets/garden/collectible-5.png', '/assets/garden/collectible-6.png', '/assets/garden/collectible-7.png', '/assets/garden/collectible-8.png'
     ],
     ocean: [
-      '/assets/ocean/ocean-1.png', '/assets/ocean/ocean-2.png', '/assets/ocean/ocean-3.png', '/assets/ocean/ocean-4.png',
-      '/assets/ocean/ocean-5.png', '/assets/ocean/ocean-6.png', '/assets/ocean/ocean-7.png', '/assets/ocean/ocean-8.png'
+      '/assets/ocean/collectible-1.png', '/assets/ocean/collectible-2.png', '/assets/ocean/collectible-3.png', '/assets/ocean/collectible-4.png',
+      '/assets/ocean/collectible-5.png', '/assets/ocean/collectible-6.png', '/assets/ocean/collectible-7.png', '/assets/ocean/collectible-8.png'
     ],
     space: [
-      '/assets/space/astro-1.png', '/assets/space/astro-2.png', '/assets/space/astro-3.png', '/assets/space/astro-4.png',
-      '/assets/space/astro-5.png', '/assets/space/astro-6.png', '/assets/space/astro-7.png', '/assets/space/astro-8.png'
+      '/assets/space/collectible-1.png', '/assets/space/collectible-2.png', '/assets/space/collectible-3.png', '/assets/space/collectible-4.png',
+      '/assets/space/collectible-5.png', '/assets/space/collectible-6.png', '/assets/space/collectible-7.png', '/assets/space/collectible-8.png'
     ]
   };
 
@@ -249,7 +249,7 @@ function App() {
       helper: '/assets/helper-bee.png',
       helper: '/assets/helper-stars.png',
       seedName: 'Sprout',
-      bud: '/assets/garden/plant-1.png',
+      bud: '/assets/garden/collectible-1.png',
       balanceAsset: '/assets/balance-seed.png'
     },
     ocean: {
@@ -264,7 +264,7 @@ function App() {
       helper: '/assets/helper-fish.png',
       themeColor: 'bg-blue-400',
       seedName: 'Whale',
-      bud: '/assets/ocean/ocean-1.png',
+      bud: '/assets/ocean/collectible-1.png',
       balanceAsset: '/assets/balance-whale.png'
     },
     space: {
@@ -280,7 +280,7 @@ function App() {
       helper: '/assets/helper-stars.png',
       themeColor: 'bg-purple-600',
       seedName: 'Asteroid',
-      bud: '/assets/space/astro-1.png',
+      bud: '/assets/space/collectible-1.png',
       balanceAsset: '/assets/balance-asteroid.png'
     }
   };
