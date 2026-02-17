@@ -1,0 +1,7 @@
+{
+  "appId": "math-sprouts",
+  "displayName": "Math Sprouts",
+  "assetsBasePath": "/assets/math-sprouts",
+  "defaultTheme": "garden",
+  "enabledGameModes": ["balance", "garden", "pollinator"]
+}

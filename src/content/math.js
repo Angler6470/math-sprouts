@@ -46,7 +46,7 @@ export const pack = {
       ],
       advanced: [
         { template: 'A garden produces {n1} vegetables. This is {n2} times last year\'s amount. How many last year?', operation: 'divide', theme: 'production' },
-        { template: 'You spend ${n1} on seeds and ${n2} on soil. Your total budget is $100. How much left?', operation: 'subtract', theme: 'gardening budget' }
+        { template: 'You spend $' + '{n1} on seeds and $' + '{n2} on soil. Your total budget is $100. How much left?', operation: 'subtract', theme: 'gardening budget' }
       ]
     },
     ocean: {
