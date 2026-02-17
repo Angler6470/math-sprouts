@@ -1,6 +1,7 @@
 // src/content/math.js
 export const pack = {
   id: 'math',
+  type: 'math',
   title: 'Math Sprouts',
   modes: [
     { key: 'arithmetic', label: 'Arithmetic' },

@@ -1,6 +1,4 @@
-// src/game/generator.js
-// Reserved for math-specific pack-driven generation.
+import { createGenerator } from 'sprouts-engine';
+import { pack } from '../content/math';
 
-export function generateProblemFromPack() {
-  return { prompt: '', options: [], answer: '' };
-}
+export const generateProblem = createGenerator(pack);

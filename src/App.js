@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { loadProgress, recordAnswer, recordSessionStart, recordSessionEnd } from './lib/progress';
 import { loadParentSettings, saveParentSettings } from './lib/parentSettings';
 import { useSessionTimer } from './hooks/useSessionTimer';
+import { generateProblem } from './game/generator';
 import SplashScreen from './components/SplashScreen';
 import HelpModal from './components/HelpModal';
 
@@ -352,103 +353,16 @@ function App() {
   };
 
   // Generate a new problem based on level and difficulty
-  const generateProblem = useCallback((currentLevel = level, currentDiff = difficulty) => {
-    let n1, n2, correctAnswer, type = '+';
-    let max = 10;
-
-    if (currentDiff === 'beginner') max = 5;
-    if (currentDiff === 'intermediate') max = 15;
-    if (currentDiff === 'advanced') max = 30;
-
-    if (currentLevel === 1) {
-      correctAnswer = Math.floor(Math.random() * (max - 1)) + 2;
-      n1 = Math.floor(Math.random() * (correctAnswer - 1)) + 1;
-      n2 = correctAnswer - n1;
-    } else if (currentLevel === 2) {
-      const levelMax = Math.floor(max * 1.5);
-      correctAnswer = Math.floor(Math.random() * (levelMax - 1)) + 2;
-      n1 = Math.floor(Math.random() * (correctAnswer - 1)) + 1;
-      n2 = correctAnswer - n1;
-    } else if (currentLevel === 3) {
-      type = '-';
-      n1 = Math.floor(Math.random() * max) + 5;
-      n2 = Math.floor(Math.random() * n1) + 1;
-      correctAnswer = n1 - n2;
-    } else if (currentLevel === 4) {
-      type = '-';
-      n1 = Math.floor(Math.random() * max);
-      n2 = Math.floor(Math.random() * max);
-      correctAnswer = n1 - n2;
-    } else if (currentLevel === 5) {
-      type = '×';
-      const multMax = currentDiff === 'beginner' ? 5 : currentDiff === 'intermediate' ? 9 : 12;
-      n1 = Math.floor(Math.random() * multMax) + 1;
-      n2 = Math.floor(Math.random() * multMax) + 1;
-      correctAnswer = n1 * n2;
-    } else if (currentLevel === 6) {
-      const isDiv = Math.random() > 0.5;
-      if (isDiv) {
-        type = '÷';
-        const divMax = currentDiff === 'beginner' ? 5 : currentDiff === 'intermediate' ? 10 : 12;
-        correctAnswer = Math.floor(Math.random() * divMax) + 1;
-        n2 = Math.floor(Math.random() * divMax) + 1;
-        n1 = correctAnswer * n2;
-      } else {
-        type = '×';
-        const multMax = currentDiff === 'beginner' ? 6 : currentDiff === 'intermediate' ? 10 : 15;
-        n1 = Math.floor(Math.random() * multMax) + 1;
-        n2 = Math.floor(Math.random() * multMax) + 1;
-        correctAnswer = n1 * n2;
-      }
-    } else if (currentLevel === 7) {
-      const isAdd = Math.random() > 0.5;
-      type = isAdd ? '+' : '-';
-      const mixMax = max * 2;
-      if (isAdd) {
-        n1 = Math.floor(Math.random() * mixMax) + 1;
-        n2 = Math.floor(Math.random() * mixMax) + 1;
-        correctAnswer = n1 + n2;
-      } else {
-        n1 = Math.floor(Math.random() * mixMax) + mixMax;
-        n2 = Math.floor(Math.random() * mixMax) + 1;
-        correctAnswer = n1 - n2;
-      }
-    } else if (currentLevel === 8) {
-      type = '×';
-      n1 = currentDiff === 'beginner' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 10) + 5;
-      n2 = Math.floor(Math.random() * 10) + 1;
-      correctAnswer = n1 * n2;
-    } else {
-      const rand = Math.random();
-      if (rand < 0.25) {
-        type = '+'; n1 = Math.floor(Math.random() * 50); n2 = Math.floor(Math.random() * 50); correctAnswer = n1 + n2;
-      } else if (rand < 0.5) {
-        type = '-'; n1 = Math.floor(Math.random() * 100); n2 = Math.floor(Math.random() * 50); correctAnswer = n1 - n2;
-      } else if (rand < 0.75) {
-        type = '×'; n1 = Math.floor(Math.random() * 12); n2 = Math.floor(Math.random() * 12); correctAnswer = n1 * n2;
-      } else {
-        type = '÷'; correctAnswer = Math.floor(Math.random() * 12) + 1; n2 = Math.floor(Math.random() * 12) + 1; n1 = correctAnswer * n2;
-      }
-    }
-
-    const optionsSet = new Set([correctAnswer]);
-    while (optionsSet.size < 3) {
-      const offset = Math.floor(Math.random() * 11) - 5;
-      const fake = correctAnswer + offset;
-      if (fake !== correctAnswer) optionsSet.add(fake);
-      if (optionsSet.size < 3) optionsSet.add(correctAnswer + (Math.random() > 0.5 ? 10 : -10));
-    }
-    
-    const optionsArray = Array.from(optionsSet).sort(() => Math.random() - 0.5);
-
-    setProblem({ num1: n1, num2: n2, answer: correctAnswer, options: optionsArray, type });
+  const generateNewProblem = useCallback((currentLevel = level, currentDiff = difficulty) => {
+    const problem = generateProblem({ level: currentLevel, difficulty: currentDiff });
+    setProblem(problem);
     setFeedback({ message: '', type: '' });
     setHintedOptionIndex(null);
   }, [level, difficulty]);
 
   useEffect(() => {
-    generateProblem();
-  }, [generateProblem]);
+    generateNewProblem();
+  }, [generateNewProblem]);
 
   useEffect(() => {
     setCurrentTargetPlant(plantAssetsRef.current[theme][Math.floor(Math.random() * plantAssetsRef.current[theme].length)]);
@@ -489,7 +403,7 @@ function App() {
           setSeeds(0);
           setCurrentTargetPlant(plantAssetsRef.current[theme][Math.floor(Math.random() * plantAssetsRef.current[theme].length)]);
           setIsAnimating(false);
-          generateProblem(nextLevel);
+          generateNewProblem(nextLevel);
         }, 2000);
       } else {
         setSeeds(newSeeds);
@@ -499,7 +413,7 @@ function App() {
             return;
           }
           setIsAnimating(false); 
-          generateProblem(); 
+          generateNewProblem(); 
         }, 1000);
       }
     } else {
