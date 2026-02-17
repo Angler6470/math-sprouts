@@ -129,15 +129,15 @@ const ParentSettingsPanel = ({ settings, onUpdate }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div>
-        <p className="text-[10px] font-black text-stone-400 uppercase mb-2">Session Limit</p>
-        <div className="flex flex-wrap gap-2">
+        <p className="text-[9px] sm:text-[10px] font-black text-stone-400 uppercase mb-2">Session Limit</p>
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {[0, 5, 10, 15, 20, 30].map(mins => (
             <button
               key={mins}
               onClick={() => onUpdate({ ...settings, sessionTimeLimit: mins })}
-              className={`px-3 py-1.5 rounded-full text-[10px] font-black border-b-2 transition-all ${settings.sessionTimeLimit === mins ? 'bg-stone-800 text-white border-stone-900' : 'bg-stone-100 text-stone-500 border-stone-200'}`}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black border-b-2 transition-all min-h-[36px] ${settings.sessionTimeLimit === mins ? 'bg-stone-800 text-white border-stone-900' : 'bg-stone-100 text-stone-500 border-stone-200'}`}
             >
               {mins === 0 ? 'None' : `${mins}m`}
             </button>
@@ -145,27 +145,27 @@ const ParentSettingsPanel = ({ settings, onUpdate }) => {
         </div>
       </div>
 
-      <div className="bg-stone-50 p-3 rounded-2xl flex items-center justify-between border-b-2 border-stone-200">
-        <div>
-          <p className="text-[11px] font-black text-stone-700">Gentle Stop</p>
-          <p className="text-[9px] text-stone-400 font-bold">Finish current question before break</p>
+      <div className="bg-stone-50 p-2.5 sm:p-3 rounded-2xl flex items-center justify-between gap-2 border-b-2 border-stone-200">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] sm:text-[11px] font-black text-stone-700">Gentle Stop</p>
+          <p className="text-[8px] sm:text-[9px] text-stone-400 font-bold">Finish current question before break</p>
         </div>
         <button 
           onClick={() => onUpdate({ ...settings, stopAfterCurrentQuestion: !settings.stopAfterCurrentQuestion })}
-          className={`w-10 h-5 rounded-full relative transition-colors ${settings.stopAfterCurrentQuestion ? 'bg-green-500' : 'bg-stone-300'}`}
+          className={`w-10 h-5 rounded-full relative transition-colors shrink-0 ${settings.stopAfterCurrentQuestion ? 'bg-green-500' : 'bg-stone-300'}`}
         >
           <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${settings.stopAfterCurrentQuestion ? 'left-5.5' : 'left-0.5'}`} />
         </button>
       </div>
 
       <div className="space-y-2">
-        <p className="text-[10px] font-black text-stone-400 uppercase">Lock Settings</p>
+        <p className="text-[9px] sm:text-[10px] font-black text-stone-400 uppercase">Lock Settings</p>
         {Object.entries({ theme: 'Theme', difficulty: 'Difficulty', gameMode: 'Game Mode' }).map(([key, label]) => (
           <div key={key} className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-stone-600">{label}</span>
+            <span className="text-[10px] sm:text-[11px] font-bold text-stone-600">{label}</span>
             <button 
               onClick={() => toggleLock(key)}
-              className={`p-1.5 rounded-lg transition-colors ${settings.locks[key] ? 'text-rose-500 bg-rose-50' : 'text-stone-300 hover:bg-stone-50'}`}
+              className={`p-1.5 rounded-lg transition-colors text-base min-w-[36px] min-h-[36px] ${settings.locks[key] ? 'text-rose-500 bg-rose-50' : 'text-stone-300 hover:bg-stone-50'}`}
             >
               {settings.locks[key] ? '🔒' : '🔓'}
             </button>
@@ -174,10 +174,10 @@ const ParentSettingsPanel = ({ settings, onUpdate }) => {
       </div>
 
       <div className="space-y-2 pt-2 border-t border-stone-100">
-        <p className="text-[10px] font-black text-stone-400 uppercase">Allowed Themes</p>
-        <div className="flex gap-2">
+        <p className="text-[9px] sm:text-[10px] font-black text-stone-400 uppercase">Allowed Themes</p>
+        <div className="flex gap-1.5 sm:gap-2 flex-wrap">
           {['garden', 'ocean', 'space'].map(t => (
-            <button key={t} onClick={() => toggleArray('allowedThemes', t)} className={`px-2 py-1 rounded-lg text-[9px] font-black capitalize border-b-2 transition-all ${settings.allowedThemes.includes(t) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-stone-50 text-stone-300 border-stone-100'}`}>
+            <button key={t} onClick={() => toggleArray('allowedThemes', t)} className={`px-2 py-1 rounded-lg text-[8px] sm:text-[9px] font-black capitalize border-b-2 transition-all min-h-[32px] ${settings.allowedThemes.includes(t) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-stone-50 text-stone-300 border-stone-100'}`}>
               {t}
             </button>
           ))}
@@ -579,20 +579,20 @@ function App() {
           ))}
         </div>
 
-        <div className="w-full flex-1 flex items-center justify-center min-h-0">
+        <div className="w-full flex-1 flex items-center justify-center min-h-0 px-2">
           {gameMode === 'balance' && (
-            <div className="w-full relative h-40 flex flex-col items-center justify-center">
-              <div className={`absolute bottom-0 w-12 h-12 bg-blue-100 border-2 border-blue-200 rounded-full shadow-inner overflow-hidden transition-all duration-500 ${isAnimating ? 'animate-water-wobble' : ''}`}>
+            <div className="w-full relative h-32 sm:h-40 flex flex-col items-center justify-center">
+              <div className={`absolute bottom-0 w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border-2 border-blue-200 rounded-full shadow-inner overflow-hidden transition-all duration-500 ${isAnimating ? 'animate-water-wobble' : ''}`}>
                 <div className="absolute bottom-0 w-full h-1/2 bg-blue-300/30 blur-[1px]"></div>
               </div>
-              <div className="absolute bottom-[35px] w-full max-w-[280px] h-4 bg-yellow-100 border-2 border-yellow-200 rounded-full transition-transform duration-700 ease-in-out origin-center flex items-center justify-between px-2 shadow-sm" style={{ transform: `rotate(${tiltAngle}deg)` }}>
-                <div className="relative w-28 h-28 -mt-28 -ml-8 flex flex-wrap-reverse gap-0 items-end justify-center p-1">
+              <div className="absolute bottom-[28px] sm:bottom-[35px] w-full max-w-[240px] sm:max-w-[280px] h-3.5 sm:h-4 bg-yellow-100 border-2 border-yellow-200 rounded-full transition-transform duration-700 ease-in-out origin-center flex items-center justify-between px-1.5 sm:px-2 shadow-sm" style={{ transform: `rotate(${tiltAngle}deg)` }}>
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 -mt-24 sm:-mt-28 -ml-6 sm:-ml-8 flex flex-wrap-reverse gap-0 items-end justify-center p-1">
                   {[...Array(seeds)].map((_, i) => (
-                    <div key={i} className="w-1/3 flex justify-center items-end h-8">
+                    <div key={i} className="w-1/3 flex justify-center items-end h-7 sm:h-8">
                       <img 
                         src={currentTheme.balanceAsset} 
                         alt="seed" 
-                        className={`w-10 h-10 ${i === seeds - 1 && isAnimating ? 'animate-fall-lightly' : 'animate-bounce-light'}`} 
+                        className={`w-8 h-8 sm:w-10 sm:h-10 ${i === seeds - 1 && isAnimating ? 'animate-fall-lightly' : 'animate-bounce-light'}`} 
                         style={{ 
                           animationDelay: i === seeds - 1 && isAnimating ? '0s' : `${i * 0.1}s`, 
                           transform: `rotate(${-tiltAngle}deg)` 
@@ -601,11 +601,11 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <div className="relative w-20 h-20 -mt-20 -mr-4 flex flex-col items-center justify-end pb-1">
-                  <img src={currentTargetPlant} alt="target" className="w-16 h-16 object-contain drop-shadow-md transform transition-transform duration-500" style={{ transform: `rotate(${-tiltAngle}deg)` }} />
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 -mt-16 sm:-mt-20 -mr-3 sm:-mr-4 flex flex-col items-center justify-end pb-1">
+                  <img src={currentTargetPlant} alt="target" className="w-14 h-14 sm:w-16 sm:h-16 object-contain drop-shadow-md transform transition-transform duration-500" style={{ transform: `rotate(${-tiltAngle}deg)` }} />
                 </div>
               </div>
-              <p className="absolute bottom-[-15px] text-[7px] font-black text-green-600 bg-white/80 px-2 py-0.5 rounded-full border border-green-100 uppercase tracking-widest">
+              <p className="absolute bottom-[-12px] sm:bottom-[-15px] text-[6px] sm:text-[7px] font-black text-green-600 bg-white/80 px-1.5 sm:px-2 py-0.5 rounded-full border border-green-100 uppercase tracking-widest">
                 {seeds} {currentTheme.seedName}{seeds !== 1 ? 's' : ''}
               </p>
             </div>
@@ -614,19 +614,19 @@ function App() {
           {gameMode === 'garden' && (
             <div className="relative flex flex-col items-center">
               <div className="transition-all duration-1000 ease-out transform origin-bottom" style={{ transform: `scale(${0.8 + seeds * 0.12})`, filter: isAnimating ? 'brightness(1.1)' : 'none' }}>
-                <img src={currentTargetPlant} alt="growing plant" className="w-24 h-24 object-contain drop-shadow-lg" />
+                <img src={currentTargetPlant} alt="growing plant" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-lg" />
               </div>
-              <div className="w-32 h-4 bg-stone-200 rounded-full mt-2 shadow-inner border-2 border-stone-300"></div>
-              <p className="text-stone-400 text-[8px] font-black mt-1 uppercase tracking-widest">Growing...</p>
+              <div className="w-28 h-3.5 sm:w-32 sm:h-4 bg-stone-200 rounded-full mt-2 shadow-inner border-2 border-stone-300"></div>
+              <p className="text-stone-400 text-[7px] sm:text-[8px] font-black mt-1 uppercase tracking-widest">Growing...</p>
             </div>
           )}
 
           {gameMode === 'pollinator' && (
-            <div className="relative w-full h-48 flex flex-col items-center justify-center">
+            <div className="relative w-full h-40 sm:h-48 flex flex-col items-center justify-center">
               <div className="relative z-0">
                 <div className={`transition-all duration-1000 ${seeds >= 10 ? 'scale-110' : 'scale-100'}`}>
                   <div className="relative flex items-center justify-center">
-                    {seeds < 10 && <div className="absolute inset-0 flex items-center justify-center animate-pulse opacity-30"><div className="w-24 h-24 bg-rose-100 rounded-full blur-lg"></div></div>}
+                    {seeds < 10 && <div className="absolute inset-0 flex items-center justify-center animate-pulse opacity-30"><div className="w-20 h-20 sm:w-24 sm:h-24 bg-rose-100 rounded-full blur-lg"></div></div>}
                     <img 
                       src={currentTargetPlant} 
                       alt="pollinator plant" 
@@ -634,7 +634,7 @@ function App() {
                         filter: `saturate(${0.2 + (seeds * 0.08)}) brightness(${0.8 + (seeds * 0.04)})`,
                         transform: `scale(${0.75 + (seeds * 0.025)})`
                       }}
-                      className={`w-24 h-24 object-contain drop-shadow-lg transition-all duration-1000`}
+                      className={`w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-lg transition-all duration-1000`}
                     />
                   </div>
                 </div>
@@ -644,12 +644,12 @@ function App() {
                 {[...Array(seeds)].map((_, i) => (
                   <div key={i} className="absolute w-full h-full animate-bee-circle" style={{ animationDuration: `${3 + (i % 2)}s`, animationDelay: `${-i * 0.5}s`, zIndex: 10 }}>
                     <div className="absolute left-1/2 top-0" style={{ transform: 'translateX(-50%)' }}>
-                      <img src={currentTheme.helper} alt="helper" className={`object-contain ${theme === 'space' ? 'w-10 h-10' : 'w-8 h-8'}`} />
+                      <img src={currentTheme.helper} alt="helper" className={`object-contain ${theme === 'space' ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-7 h-7 sm:w-8 sm:h-8'}`} />
                     </div>
                   </div>
                 ))}
               </div>
-              <p className="mt-4 bg-white/60 px-2 py-0.5 rounded-full border border-yellow-100 text-[7px] font-black text-yellow-700 uppercase tracking-widest">{seeds} Helping Hand{seeds !== 1 ? 's' : ''}</p>
+              <p className="mt-3 sm:mt-4 bg-white/60 px-2 py-0.5 rounded-full border border-yellow-100 text-[6px] sm:text-[7px] font-black text-yellow-700 uppercase tracking-widest">{seeds} Helping Hand{seeds !== 1 ? 's' : ''}</p>
             </div>
           )}
         </div>
