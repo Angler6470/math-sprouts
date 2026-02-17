@@ -40,7 +40,7 @@ const PINPad = ({ correctPin, onAuthenticated, onSetPin }) => {
           <div key={i} className={`w-3 h-3 rounded-full border-2 transition-all ${input.length > i ? 'bg-stone-800 border-stone-800' : 'border-stone-300'} ${error ? 'bg-rose-500 border-rose-500 animate-shake' : ''}`} />
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '⌫'].map((btn) => (
           <button
             key={btn}
@@ -49,7 +49,7 @@ const PINPad = ({ correctPin, onAuthenticated, onSetPin }) => {
               else if (btn === '⌫') setInput(input.slice(0, -1));
               else handleDigit(btn);
             }}
-            className="w-12 h-12 rounded-full bg-stone-100 font-black text-stone-700 active:bg-stone-200 shadow-sm border-b-2 border-stone-300"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-stone-100 font-black text-stone-700 active:bg-stone-200 shadow-sm border-b-2 border-stone-300 text-sm sm:text-base"
           >
             {btn}
           </button>
@@ -71,28 +71,28 @@ const ParentSummary = ({ stats }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
-          <p className="text-[10px] font-black text-stone-400 uppercase">Accuracy</p>
-          <p className="text-xl font-black text-green-600">{accuracy}%</p>
+        <div className="bg-stone-50 p-2 sm:p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 uppercase">Accuracy</p>
+          <p className="text-lg sm:text-xl font-black text-green-600">{accuracy}%</p>
         </div>
-        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
-          <p className="text-[10px] font-black text-stone-400 uppercase">Streak</p>
-          <p className="text-xl font-black text-orange-500">{stats.streakBest}</p>
+        <div className="bg-stone-50 p-2 sm:p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 uppercase">Streak</p>
+          <p className="text-lg sm:text-xl font-black text-orange-500">{stats.streakBest}</p>
         </div>
-        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
-          <p className="text-[10px] font-black text-stone-400 uppercase">Questions</p>
-          <p className="text-xl font-black text-stone-700">{stats.totalQuestionsAnswered}</p>
+        <div className="bg-stone-50 p-2 sm:p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 uppercase">Questions</p>
+          <p className="text-lg sm:text-xl font-black text-stone-700">{stats.totalQuestionsAnswered}</p>
         </div>
-        <div className="bg-stone-50 p-3 rounded-2xl border-b-2 border-stone-200">
-          <p className="text-[10px] font-black text-stone-400 uppercase">Play Time</p>
-          <p className="text-[13px] font-black text-stone-700">{formatTime(stats.totalPlayTimeSeconds)}</p>
+        <div className="bg-stone-50 p-2 sm:p-3 rounded-2xl border-b-2 border-stone-200">
+          <p className="text-[9px] sm:text-[10px] font-black text-stone-400 uppercase">Play Time</p>
+          <p className="text-xs sm:text-[13px] font-black text-stone-700">{formatTime(stats.totalPlayTimeSeconds)}</p>
         </div>
       </div>
       
-      <div className="bg-white rounded-2xl border border-stone-100 overflow-hidden">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-2xl border border-stone-100 overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[280px]">
           <thead>
             <tr className="bg-stone-50 text-[9px] font-black uppercase text-stone-400">
               <th className="p-2">Difficulty</th>
@@ -442,7 +442,7 @@ function App() {
   const tiltAngle = 15 - (seeds * 3);
 
   return (
-    <div className={`h-[100dvh] ${currentTheme.bg} flex flex-col items-center p-3 font-sans ${currentTheme.textColor || 'text-stone-800'} overflow-hidden relative transition-colors duration-500`}>
+    <div className={`min-h-[100dvh] h-[100dvh] ${currentTheme.bg} flex flex-col items-center p-2 sm:p-3 font-sans ${currentTheme.textColor || 'text-stone-800'} overflow-hidden relative transition-colors duration-500`}>
       {showSplash && (
         <SplashScreen onFinish={() => { sessionStorage.setItem('mathsprouts_seen_splash', '1'); setShowSplash(false); }} />
       )}
@@ -450,19 +450,19 @@ function App() {
       {/* Parent Access Button */}
       <button 
         onClick={() => { setShowParentModal(true); setIsParentAuthenticated(false); }}
-        className="fixed left-2 top-2 z-40 bg-white/40 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white/60 transition-all border border-white/20"
+        className="fixed left-1 sm:left-2 top-1.5 sm:top-2 z-40 bg-white/40 backdrop-blur-sm p-1.5 sm:p-2 rounded-full shadow-sm hover:bg-white/60 transition-all border border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center"
       >
         <span className="text-sm">⚙️</span>
       </button>
 
       {/* Side Difficulty Toggle */}
-      <div className="fixed left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-40">
+      <div className="fixed left-1 sm:left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:gap-1.5 z-40">
         {['beginner', 'intermediate', 'advanced'].map((d) => (
           <div key={d} className="relative group">
             <button
               disabled={parentSettings.locks.difficulty || !parentSettings.allowedDifficulties.includes(d)}
               onClick={() => setDifficulty(d)}
-              className={`w-8 h-8 rounded-xl flex items-center justify-center text-[9px] font-black uppercase transition-all shadow-md border-b-2 
+              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center text-[8px] sm:text-[9px] font-black uppercase transition-all shadow-md border-b-2 
               ${difficulty === d ? 'bg-green-500 text-white scale-105 border-green-700' : 'bg-white text-stone-400 border-stone-200'}
               ${parentSettings.locks.difficulty ? 'opacity-50 cursor-not-allowed' : ''}
               ${!parentSettings.allowedDifficulties.includes(d) ? 'hidden' : ''}`}
@@ -470,21 +470,21 @@ function App() {
               {d[0]}
             </button>
             {parentSettings.locks.difficulty && difficulty === d && (
-              <span className="absolute -right-2 -top-1 text-[8px] drop-shadow-sm">🔒</span>
+              <span className="absolute -right-1.5 sm:-right-2 -top-1 text-[8px] drop-shadow-sm">🔒</span>
             )}
           </div>
         ))}
       </div>
 
       {/* Style Panel */}
-      <div className="fixed right-2 top-2 z-40 flex flex-col items-center">
-        <div className="bg-stone-800 p-1.5 rounded-full shadow-xl flex flex-col gap-2 border-2 border-stone-700 relative">
+      <div className="fixed right-1 sm:right-2 top-1.5 sm:top-2 z-40 flex flex-col items-center">
+        <div className="bg-stone-800 p-1 sm:p-1.5 rounded-full shadow-xl flex flex-col gap-1.5 sm:gap-2 border-2 border-stone-700 relative">
           {['garden', 'ocean', 'space'].map((t) => (
             <button
               key={t}
               disabled={parentSettings.locks.theme || !parentSettings.allowedThemes.includes(t)}
               onClick={() => setTheme(t)}
-              className={`w-5 h-5 rounded-full transition-all duration-300 relative
+              className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full transition-all duration-300 relative
               ${theme === t 
                 ? `${themeConfig[t].themeColor} shadow-[0_0_10px_rgba(255,255,255,0.4)] scale-110` 
                 : 'bg-stone-600 opacity-40'}
@@ -495,18 +495,18 @@ function App() {
             <span className="absolute -left-1 -top-1 text-[8px] drop-shadow-sm">🔒</span>
           )}
         </div>
-        <span className={`text-[7px] font-black mt-1 uppercase tracking-widest ${theme === 'space' ? 'text-slate-400' : 'text-stone-400'}`}>Theme</span>
+        <span className={`text-[6px] sm:text-[7px] font-black mt-0.5 sm:mt-1 uppercase tracking-widest ${theme === 'space' ? 'text-slate-400' : 'text-stone-400'}`}>Theme</span>
       </div>
       
       {/* Header */}
-      <header className="w-full max-w-md flex flex-col items-center mt-1 shrink-0">
-        <div className="flex items-center gap-3 mb-1">
-          <div className={`w-16 h-16 ${currentTheme.headerBg} rounded-full flex items-center justify-center shadow-inner border-2 ${currentTheme.headerBorder} overflow-hidden`}>
-            <img src={currentTheme.mascot} alt="mascot" className="w-14 h-14 object-contain" />
+      <header className="w-full max-w-md flex flex-col items-center mt-0.5 sm:mt-1 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 mb-1">
+          <div className={`w-14 h-14 sm:w-16 sm:h-16 ${currentTheme.headerBg} rounded-full flex items-center justify-center shadow-inner border-2 ${currentTheme.headerBorder} overflow-hidden`}>
+            <img src={currentTheme.mascot} alt="mascot" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
           </div>
           <div>
-            <h1 className={`text-3xl font-normal ${currentTheme.accent} tracking-tight leading-none`} style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Math Sprouts</h1>
-            <div className={`mt-1 px-3 py-0.5 rounded-full text-[9px] font-black text-white uppercase inline-block
+            <h1 className={`text-2xl sm:text-3xl font-normal ${currentTheme.accent} tracking-tight leading-none`} style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Math Sprouts</h1>
+            <div className={`mt-1 px-2 sm:px-3 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black text-white uppercase inline-block
               ${level <= 3 ? 'bg-yellow-500' : level <= 6 ? 'bg-orange-500' : 'bg-rose-600'}`}>
               Level {level}
             </div>
@@ -520,7 +520,7 @@ function App() {
               key={m}
               disabled={parentSettings.locks.gameMode || !parentSettings.allowedModes.includes(m)}
               onClick={() => setGameMode(m)}
-              className={`px-2.5 py-0.5 rounded-full text-[8px] font-bold transition-all whitespace-nowrap 
+              className={`px-2 sm:px-2.5 py-0.5 rounded-full text-[7px] sm:text-[8px] font-bold transition-all whitespace-nowrap 
               ${gameMode === m ? 'bg-green-500 text-white shadow-sm' : 'text-green-700 hover:bg-green-100'}
               ${!parentSettings.allowedModes.includes(m) ? 'hidden' : ''}`}
             >
@@ -534,15 +534,15 @@ function App() {
       </header>
 
       {/* Main Game Area */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-3 py-1 overflow-hidden">
+      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-2 sm:gap-3 py-1 overflow-hidden">
         
-        <div className={`bg-white rounded-2xl p-4 shadow-lg border-b-4 ${currentTheme.problemBorder} w-full text-center relative z-10 shrink-0 transition-transform ${feedback.type === 'error' ? 'animate-shake' : ''}`}>
-          <h2 className="text-4xl font-black text-stone-700 mb-1">
+        <div className={`bg-white rounded-2xl p-3 sm:p-4 shadow-lg border-b-4 ${currentTheme.problemBorder} w-full text-center relative z-10 shrink-0 transition-transform ${feedback.type === 'error' ? 'animate-shake' : ''}`}>
+          <h2 className="text-3xl sm:text-4xl font-black text-stone-700 mb-1">
             {problem.num1} {problem.type} {problem.num2} = ?
           </h2>
-          <div className={`h-14 flex items-center justify-center transition-all duration-300 ${feedback.message ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-            <img src={feedback.type === 'success' ? asset('shared', 'feedback-success.png') : asset('shared', 'feedback-error.png')} alt={feedback.type} className="w-12 h-12 mr-3 drop-shadow-md" />
-            <p className={`text-xl font-black ${feedback.type === 'success' ? 'text-green-500' : 'text-orange-400'}`}>
+          <div className={`h-12 sm:h-14 flex items-center justify-center transition-all duration-300 ${feedback.message ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+            <img src={feedback.type === 'success' ? asset('shared', 'feedback-success.png') : asset('shared', 'feedback-error.png')} alt={feedback.type} className="w-10 h-10 sm:w-12 sm:h-12 mr-2 sm:mr-3 drop-shadow-md" />
+            <p className={`text-lg sm:text-xl font-black ${feedback.type === 'success' ? 'text-green-500' : 'text-orange-400'}`}>
               {feedback.message}
             </p>
           </div>
@@ -550,7 +550,7 @@ function App() {
           <button 
             onClick={handleHint}
             disabled={hintedOptionIndex !== null || isAnimating}
-            className={`mt-2 px-3 py-1 rounded-full text-[8px] font-black uppercase transition-all border-b-2 
+            className={`mt-1.5 sm:mt-2 px-2.5 sm:px-3 py-1 rounded-full text-[7px] sm:text-[8px] font-black uppercase transition-all border-b-2 
             ${hintedOptionIndex !== null 
               ? 'bg-stone-100 text-stone-300 border-stone-200' 
               : 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200'}`}
@@ -559,19 +559,19 @@ function App() {
           </button>
         </div>
 
-        <div className="flex gap-2.5 relative z-10 shrink-0 transition-all duration-500 ease-in-out">
+        <div className="flex gap-2 sm:gap-2.5 relative z-10 shrink-0 transition-all duration-500 ease-in-out">
           {problem.options.map((option, index) => (
             <button
               key={index}
               onClick={() => handleAnswer(option)}
               disabled={isAnimating}
               className={`
-                rounded-full text-xl font-bold text-white shadow-md
+                rounded-full text-lg sm:text-xl font-bold text-white shadow-md
                 transform transition-all duration-500 ease-in-out active:scale-95
                 ${currentTheme.btnColors[index]}
                 ${hintedOptionIndex === index 
                   ? 'opacity-0 scale-0 w-0 h-0 m-0 pointer-events-none p-0 border-0' 
-                  : 'w-14 h-14'}
+                  : 'w-12 h-12 sm:w-14 sm:h-14'}
               `}
             >
               {hintedOptionIndex === index ? null : option}
@@ -657,23 +657,23 @@ function App() {
 
       {/* PWA Install Banner */}
       {showInstallBanner && (
-        <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-3 mb-2 border-2 border-green-200 shadow-lg flex items-center justify-between animate-bubble-pop z-[60]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center border-2 border-green-200 shrink-0">
-              <img src="/logo192.png" alt="logo" className="w-8 h-8 object-contain" />
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 mb-2 border-2 border-green-200 shadow-lg flex items-center justify-between animate-bubble-pop z-[60]">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 rounded-xl flex items-center justify-center border-2 border-green-200 shrink-0">
+              <img src="/logo192.png" alt="logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
             </div>
-            <div>
-              <p className="text-[11px] font-black text-stone-700">Install Math Sprouts</p>
-              <p className="text-[9px] text-stone-500 font-bold">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] sm:text-[11px] font-black text-stone-700 truncate">Install Math Sprouts</p>
+              <p className="text-[8px] sm:text-[9px] text-stone-500 font-bold line-clamp-2">
                 {deferredPrompt ? 'Add to home screen for offline play!' : 'Tap Share then "Add to Home Screen"'}
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2 shrink-0">
             {deferredPrompt && (
               <button 
                 onClick={handleInstallClick}
-                className="bg-green-500 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-sm border-b-2 border-green-600 active:scale-95"
+                className="bg-green-500 text-white text-[9px] sm:text-[10px] font-black px-2.5 sm:px-3 py-1.5 rounded-lg shadow-sm border-b-2 border-green-600 active:scale-95"
               >
                 Install
               </button>
@@ -689,38 +689,38 @@ function App() {
       )}
 
       {/* Shared Garden Visuals */}
-      <div className="w-full max-w-md bg-stone-100/90 rounded-t-2xl p-2.5 border-t-2 border-green-200 min-h-[80px] shrink-0 shadow-lg relative">
-        <p className="text-center text-stone-500 text-[8px] font-black uppercase tracking-widest mb-1.5">My Collection</p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {garden.length === 0 && <p className="text-stone-400 text-[9px] italic font-medium text-center">Collection is empty!</p>}
+      <div className="w-full max-w-md bg-stone-100/90 rounded-t-2xl p-2 sm:p-2.5 border-t-2 border-green-200 min-h-[70px] sm:min-h-[80px] shrink-0 shadow-lg relative">
+        <p className="text-center text-stone-500 text-[7px] sm:text-[8px] font-black uppercase tracking-widest mb-1 sm:mb-1.5">My Collection</p>
+        <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+          <p className="text-stone-400 text-[8px] sm:text-[9px] italic font-medium text-center">{garden.length === 0 ? 'Collection is empty!' : ''}</p>
           {garden.map((plantImg, i) => (
-            <div key={i} className="w-9 h-9 flex items-center justify-center animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}>
+            <div key={i} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}>
               <img src={plantImg} alt="collection item" className="w-full h-full object-contain drop-shadow-sm" />
             </div>
           ))}
         </div>
-        <button onClick={() => setShowResetModal(true)} className="absolute top-1 right-2 text-[7px] font-bold text-stone-300 hover:text-stone-500 uppercase tracking-tighter">Reset</button>
+        <button onClick={() => setShowResetModal(true)} className="absolute top-1 right-1.5 sm:right-2 text-[7px] font-bold text-stone-300 hover:text-stone-500 uppercase tracking-tighter">Reset</button>
       </div>
 
       {/* Footer */}
-      <footer className="w-full max-w-md pb-2 pt-1.5 bg-white px-3 rounded-b-2xl shadow-xl border-x-2 border-b-2 border-stone-200 shrink-0">
-        <div className="flex justify-between items-end mb-0.5 px-1">
-          <span className="text-[8px] font-black text-stone-500 uppercase tracking-wider">Progress</span>
-          <span className="text-[8px] font-black text-stone-600">{seeds * 10}%</span>
+      <footer className="w-full max-w-md pb-1.5 sm:pb-2 pt-1 sm:pt-1.5 bg-white px-2 sm:px-3 rounded-b-2xl shadow-xl border-x-2 border-b-2 border-stone-200 shrink-0">
+        <div className="flex justify-between items-end mb-0.5 px-0.5 sm:px-1">
+          <span className="text-[7px] sm:text-[8px] font-black text-stone-500 uppercase tracking-wider">Progress</span>
+          <span className="text-[7px] sm:text-[8px] font-black text-stone-600">{seeds * 10}%</span>
         </div>
-        <div className="w-full h-3.5 bg-stone-100 rounded-full p-0.5 border-2 border-stone-200 shadow-inner overflow-hidden">
+        <div className="w-full h-3 sm:h-3.5 bg-stone-100 rounded-full p-0.5 border-2 border-stone-200 shadow-inner overflow-hidden">
           <div className={`h-full rounded-full transition-all duration-700 ease-out shadow-sm bg-gradient-to-r ${currentTheme.progressGradient}`} style={{ width: `${seeds * 10}%` }}></div>
         </div>
       </footer>
 
       {/* Reset Modal */}
       {showResetModal && (
-        <div className="fixed inset-0 bg-stone-800/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[30px] p-6 max-w-[240px] w-full shadow-2xl border-b-4 border-rose-100 animate-bubble-pop text-center">
-            <p className="text-xl font-black text-stone-700 mb-4 leading-tight">Go back to level 1?</p>
-            <div className="flex gap-3">
-              <button onClick={confirmReset} className="flex-1 bg-rose-400 text-white font-black py-2 rounded-xl shadow-md border-b-4 border-rose-600 active:scale-95">Yes!</button>
-              <button onClick={() => setShowResetModal(false)} className="flex-1 bg-stone-100 text-stone-500 font-black py-2 rounded-xl shadow-md border-b-4 border-stone-300 active:scale-95">No</button>
+        <div className="fixed inset-0 bg-stone-800/20 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-[24px] sm:rounded-[30px] p-4 sm:p-6 max-w-[220px] sm:max-w-[240px] w-full shadow-2xl border-b-4 border-rose-100 animate-bubble-pop text-center">
+            <p className="text-lg sm:text-xl font-black text-stone-700 mb-3 sm:mb-4 leading-tight">Go back to level 1?</p>
+            <div className="flex gap-2 sm:gap-3">
+              <button onClick={confirmReset} className="flex-1 bg-rose-400 text-white font-black py-1.5 sm:py-2 text-sm sm:text-base rounded-xl shadow-md border-b-4 border-rose-600 active:scale-95 min-h-[44px]">Yes!</button>
+              <button onClick={() => setShowResetModal(false)} className="flex-1 bg-stone-100 text-stone-500 font-black py-1.5 sm:py-2 text-sm sm:text-base rounded-xl shadow-md border-b-4 border-stone-300 active:scale-95 min-h-[44px]">No</button>
             </div>
           </div>
         </div>
@@ -728,25 +728,25 @@ function App() {
 
       {/* Parent Modal */}
       {showParentModal && (
-        <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-bubble-pop flex flex-col max-h-[90vh]">
-            <header className="p-6 pb-2 flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-black text-stone-800 tracking-tight">Parent Controls</h2>
+        <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-[32px] sm:rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-bubble-pop flex flex-col max-h-[90vh]">
+            <header className="p-4 sm:p-6 pb-2 flex justify-between items-start gap-2">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl sm:text-2xl font-black text-stone-800 tracking-tight">Parent Controls</h2>
                 {isParentAuthenticated && (
-                  <div className="flex gap-4 mt-2 items-center">
-                    <button onClick={() => setParentActiveTab('stats')} className={`text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'stats' ? 'text-green-600' : 'text-stone-400'}`}>Stats</button>
-                    <button onClick={() => setParentActiveTab('settings')} className={`text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'settings' ? 'text-green-600' : 'text-stone-400'}`}>Settings</button>
+                  <div className="flex gap-3 sm:gap-4 mt-2 items-center flex-wrap">
+                    <button onClick={() => setParentActiveTab('stats')} className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'stats' ? 'text-green-600' : 'text-stone-400'}`}>Stats</button>
+                    <button onClick={() => setParentActiveTab('settings')} className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${parentActiveTab === 'settings' ? 'text-green-600' : 'text-stone-400'}`}>Settings</button>
                     {parentActiveTab === 'settings' && (
-                      <button onClick={() => setShowHelpModal(true)} className="ml-2 w-7 h-7 bg-stone-100 rounded-full flex items-center justify-center font-black text-stone-500">?</button>
+                      <button onClick={() => setShowHelpModal(true)} className="ml-1 sm:ml-2 w-6 h-6 sm:w-7 sm:h-7 bg-stone-100 rounded-full flex items-center justify-center font-black text-stone-500 text-sm">?</button>
                     )}
                   </div>
                 )}
               </div>
-              <button onClick={() => setShowParentModal(false)} className="w-10 h-10 bg-stone-100 rounded-full flex items-center justify-center font-black text-stone-400">✕</button>
+              <button onClick={() => setShowParentModal(false)} className="w-9 h-9 sm:w-10 sm:h-10 bg-stone-100 rounded-full flex items-center justify-center font-black text-stone-400 shrink-0">✕</button>
             </header>
 
-            <div className="flex-1 p-6 pt-2 overflow-y-auto">
+            <div className="flex-1 p-4 sm:p-6 pt-2 overflow-y-auto">
               {!isParentAuthenticated ? (
                 <PINPad 
                   correctPin={parentSettings.pin} 
@@ -788,15 +788,15 @@ function App() {
 
       {/* Session End Overlay */}
       {showSessionEnd && (
-        <div className="fixed inset-0 bg-green-500 z-[200] flex flex-col items-center justify-center p-8 text-center animate-bubble-pop">
-          <div className={`w-40 h-40 ${currentTheme.headerBg} rounded-full flex items-center justify-center mb-6 shadow-2xl border-4 ${currentTheme.headerBorder}`}>
-            <img src={currentTheme.mascot} alt="mascot" className="w-32 h-32 object-contain" />
+        <div className="fixed inset-0 bg-green-500 z-[200] flex flex-col items-center justify-center p-6 sm:p-8 text-center animate-bubble-pop">
+          <div className={`w-32 h-32 sm:w-40 sm:h-40 ${currentTheme.headerBg} rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-2xl border-4 ${currentTheme.headerBorder}`}>
+            <img src={currentTheme.mascot} alt="mascot" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
           </div>
-          <h2 className="text-4xl font-black text-white mb-4 leading-tight" style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Great job!<br/>Time for a break 🌱</h2>
-          <p className="text-green-100 font-bold mb-8 opacity-80">You've reached your daily math goal. See you next time!</p>
+          <h2 className="text-3xl sm:text-4xl font-black text-white mb-3 sm:mb-4 leading-tight" style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Great job!<br/>Time for a break 🌱</h2>
+          <p className="text-green-100 font-bold mb-6 sm:mb-8 opacity-80 text-sm sm:text-base">You've reached your daily math goal. See you next time!</p>
           <button 
             onClick={() => { recordSessionEnd(elapsedSeconds); setShowSessionEnd(false); setPendingSessionEnd(false); }}
-            className="bg-white text-green-600 font-black px-8 py-3 rounded-2xl shadow-xl border-b-4 border-green-100 active:scale-95 transition-all"
+            className="bg-white text-green-600 font-black px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base rounded-2xl shadow-xl border-b-4 border-green-100 active:scale-95 transition-all min-h-[44px]"
           >
             I'm Done
           </button>
