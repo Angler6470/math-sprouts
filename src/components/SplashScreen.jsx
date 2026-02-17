@@ -74,11 +74,11 @@ export default function SplashScreen({ onFinish }) {
       <div className={`relative z-10 max-w-md w-full ${exiting ? (prefersReduced ? 'animate-fade-out' : 'animate-disintegrate-out') : (prefersReduced ? 'animate-fade-in' : 'animate-disintegrate-in')} bg-white rounded-2xl p-4 sm:p-6 shadow-2xl border-2 border-stone-100 text-center`}> 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-1" style={{ fontFamily: '"Bubblegum Sans", cursive', letterSpacing: '-0.5px' }}>Math Sprouts</h1>
         <p className="text-stone-500 mb-3 sm:mb-4 text-base sm:text-lg" style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Short daily practice to grow math confidence</p>
-        <ul className="text-left mb-4 sm:mb-6 pl-3 sm:pl-4 text-stone-600 leading-snug text-xs sm:text-sm md:text-[15px] space-y-1">
-          <li>• Quick daily practice — just a few minutes</li>
-          <li>• Multiple choice problems with gentle feedback</li>
-          <li>• Earn Seeds and build your garden</li>
-          <li>• Adjustable difficulty for your child</li>
+        <ul className="text-left mb-4 sm:mb-6 pl-3 sm:pl-4 text-stone-600 leading-snug text-xs sm:text-sm md:text-[15px] space-y-1 list-disc list-inside">
+          <li>Quick daily practice — just a few minutes</li>
+          <li>Multiple choice problems with gentle feedback</li>
+          <li>Earn Seeds and build your garden</li>
+          <li>Adjustable difficulty for your child</li>
         </ul>
 
         <div className="flex gap-3 justify-center">

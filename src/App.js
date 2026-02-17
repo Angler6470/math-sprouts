@@ -692,7 +692,7 @@ function App() {
       <div className="w-full max-w-md bg-stone-100/90 rounded-t-2xl p-2 sm:p-2.5 border-t-2 border-green-200 min-h-[70px] sm:min-h-[80px] shrink-0 shadow-lg relative">
         <p className="text-center text-stone-500 text-[7px] sm:text-[8px] font-black uppercase tracking-widest mb-1 sm:mb-1.5">My Collection</p>
         <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-          <p className="text-stone-400 text-[8px] sm:text-[9px] italic font-medium text-center">{garden.length === 0 ? 'Collection is empty!' : ''}</p>
+          {garden.length === 0 && <p className="text-stone-400 text-[8px] sm:text-[9px] italic font-medium text-center">Collection is empty!</p>}
           {garden.map((plantImg, i) => (
             <div key={i} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}>
               <img src={plantImg} alt="collection item" className="w-full h-full object-contain drop-shadow-sm" />
