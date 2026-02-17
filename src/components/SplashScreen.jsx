@@ -46,7 +46,7 @@ export default function SplashScreen({ onFinish }) {
   };
 
   return (
-    <div className={`fixed inset-0 z-[900] flex items-center justify-center`}>
+    <div className={`fixed inset-0 z-[900] flex items-center justify-center p-3 sm:p-4`}>
       <div className={`absolute inset-0 ${exiting ? 'pointer-events-none' : ''}`} />
 
       <div className={`absolute inset-0 bg-gradient-to-b from-white/95 to-transparent backdrop-blur-sm ${exiting ? 'opacity-0 transition-opacity duration-500' : 'opacity-100'} `} />
@@ -71,18 +71,18 @@ export default function SplashScreen({ onFinish }) {
         ))}
       </div>
 
-      <div className={`relative z-10 max-w-md w-[92%] ${exiting ? (prefersReduced ? 'animate-fade-out' : 'animate-disintegrate-out') : (prefersReduced ? 'animate-fade-in' : 'animate-disintegrate-in')} bg-white rounded-2xl p-6 shadow-2xl border-2 border-stone-100 text-center`}> 
-        <h1 className="text-5xl font-black mb-1" style={{ fontFamily: '"Bubblegum Sans", cursive', letterSpacing: '-0.5px' }}>Math Sprouts</h1>
-        <p className="text-stone-500 mb-4 text-lg" style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Short daily practice to grow math confidence</p>
-        <ul className="text-left mb-6 pl-4 text-stone-600 leading-snug text-[15px]">
-          <li className="mb-1">• Quick daily practice — just a few minutes</li>
-          <li className="mb-1">• Multiple choice problems with gentle feedback</li>
-          <li className="mb-1">• Earn Seeds and build your garden</li>
-          <li className="mb-1">• Adjustable difficulty for your child</li>
+      <div className={`relative z-10 max-w-md w-full ${exiting ? (prefersReduced ? 'animate-fade-out' : 'animate-disintegrate-out') : (prefersReduced ? 'animate-fade-in' : 'animate-disintegrate-in')} bg-white rounded-2xl p-4 sm:p-6 shadow-2xl border-2 border-stone-100 text-center`}> 
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-1" style={{ fontFamily: '"Bubblegum Sans", cursive', letterSpacing: '-0.5px' }}>Math Sprouts</h1>
+        <p className="text-stone-500 mb-3 sm:mb-4 text-base sm:text-lg" style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Short daily practice to grow math confidence</p>
+        <ul className="text-left mb-4 sm:mb-6 pl-3 sm:pl-4 text-stone-600 leading-snug text-xs sm:text-sm md:text-[15px] space-y-1 list-disc list-inside">
+          <li>Quick daily practice — just a few minutes</li>
+          <li>Multiple choice problems with gentle feedback</li>
+          <li>Earn Seeds and build your garden</li>
+          <li>Adjustable difficulty for your child</li>
         </ul>
 
         <div className="flex gap-3 justify-center">
-          <button onClick={handleClose} aria-label="Start Math Sprouts" className="start-btn px-8 py-2 bg-green-500 text-white font-black rounded-2xl border-b-4 border-green-700 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-200">Start</button>
+          <button onClick={handleClose} aria-label="Start Math Sprouts" className="start-btn px-6 sm:px-8 py-2 bg-green-500 text-white font-black rounded-2xl border-b-4 border-green-700 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-200 text-sm sm:text-base min-h-[44px]">Start</button>
         </div>
       </div>
 

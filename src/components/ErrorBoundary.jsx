@@ -27,19 +27,28 @@ export default class ErrorBoundary extends React.Component {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
-          padding: '20px',
+          padding: '1rem',
           backgroundColor: '#fff5f5',
           fontFamily: 'sans-serif'
         }}>
-          <h1 style={{ color: '#c53030', marginBottom: '10px' }}>Something went wrong</h1>
+          <h1 style={{ 
+            color: '#c53030', 
+            marginBottom: '0.625rem',
+            fontSize: 'clamp(1.25rem, 4vw, 1.875rem)',
+            textAlign: 'center'
+          }}>Something went wrong</h1>
           <pre style={{
             backgroundColor: '#fff',
-            padding: '15px',
-            borderRadius: '5px',
+            padding: '0.9375rem',
+            borderRadius: '0.3125rem',
             maxWidth: '100%',
+            width: '100%',
+            maxWidth: '42rem',
             overflow: 'auto',
             border: '1px solid #feb2b2',
-            fontSize: '12px'
+            fontSize: 'clamp(0.625rem, 2vw, 0.75rem)',
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap'
           }}>
             {this.state.error && this.state.error.toString()}
             {'\n\n'}
@@ -48,15 +57,18 @@ export default class ErrorBoundary extends React.Component {
           <button
             onClick={() => window.location.reload()}
             style={{
-              marginTop: '20px',
-              padding: '10px 20px',
+              marginTop: '1.25rem',
+              padding: '0.625rem 1.25rem',
               backgroundColor: '#48bb78',
               color: 'white',
               border: 'none',
-              borderRadius: '5px',
+              borderRadius: '0.3125rem',
               cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold'
+              fontSize: 'clamp(0.875rem, 2.5vw, 1rem)',
+              fontWeight: 'bold',
+              touchAction: 'manipulation',
+              minHeight: '44px',
+              minWidth: '44px'
             }}
           >
             Reload App
