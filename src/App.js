@@ -193,10 +193,6 @@ const ParentSettingsPanel = ({ settings, onUpdate }) => {
 function App() {
   const APP_ID = 'math-sprouts';
 
-  const asset = (folder, file) => {
-    return `/assets/${APP_ID}/${folder}/${file}`;
-  };
-
   // Global Game State
   const [gameMode, setGameMode] = useState('balance'); 
   const [difficulty, setDifficulty] = useState('intermediate'); 
@@ -207,7 +203,7 @@ function App() {
   const [garden, setGarden] = useState([]); 
   const [feedback, setFeedback] = useState({ message: '', type: '' });
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentTargetPlant, setCurrentTargetPlant] = useState(asset('garden', 'collectible-1.png'));
+  const [currentTargetPlant, setCurrentTargetPlant] = useState('/assets/garden/collectible-1.png');
   const [showResetModal, setShowResetModal] = useState(false);
   const [showSplash, setShowSplash] = useState(() => sessionStorage.getItem('mathsprouts_seen_splash') !== '1');
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -225,15 +221,19 @@ function App() {
   const [pendingSessionEnd, setPendingSessionEnd] = useState(false);
 
   // Customization Assets
-  const createCollectibles = (theme) =>
-    Array.from({ length: 8 }, (_, i) =>
-      asset(theme, `collectible-${i + 1}.png`)
-    );
-
   const plantAssets = {
-    garden: createCollectibles('garden'),
-    ocean: createCollectibles('ocean'),
-    space: createCollectibles('space')
+    garden: [
+      '/assets/garden/collectible-1.png', '/assets/garden/collectible-2.png', '/assets/garden/collectible-3.png', '/assets/garden/collectible-4.png',
+      '/assets/garden/collectible-5.png', '/assets/garden/collectible-6.png', '/assets/garden/collectible-7.png', '/assets/garden/collectible-8.png'
+    ],
+    ocean: [
+      '/assets/ocean/collectible-1.png', '/assets/ocean/collectible-2.png', '/assets/ocean/collectible-3.png', '/assets/ocean/collectible-4.png',
+      '/assets/ocean/collectible-5.png', '/assets/ocean/collectible-6.png', '/assets/ocean/collectible-7.png', '/assets/ocean/collectible-8.png'
+    ],
+    space: [
+      '/assets/space/collectible-1.png', '/assets/space/collectible-2.png', '/assets/space/collectible-3.png', '/assets/space/collectible-4.png',
+      '/assets/space/collectible-5.png', '/assets/space/collectible-6.png', '/assets/space/collectible-7.png', '/assets/space/collectible-8.png'
+    ]
   };
 
   const plantAssetsRef = useRef(plantAssets);
@@ -247,11 +247,11 @@ function App() {
       problemBorder: 'border-green-200',
       btnColors: ['bg-rose-400 border-rose-600', 'bg-sky-400 border-sky-600', 'bg-amber-400 border-amber-600'],
       progressGradient: 'from-green-400 to-yellow-400',
-      mascot: asset('shared', 'mascot-garden.png'),
-      helper: asset('shared', 'helper-bee.png'),
+      mascot: '/assets/mascot-garden.png',
+      helper: '/assets/helper-bee.png',
       seedName: 'Sprout',
-      bud: asset('garden', 'collectible-1.png'),
-      balanceAsset: asset('shared', 'balance-seed.png')
+      bud: '/assets/garden/collectible-1.png',
+      balanceAsset: '/assets/balance-seed.png'
     },
     ocean: {
       bg: 'bg-cyan-50',
@@ -261,12 +261,12 @@ function App() {
       problemBorder: 'border-cyan-200',
       btnColors: ['bg-teal-400 border-teal-600', 'bg-blue-400 border-blue-600', 'bg-indigo-400 border-indigo-600'],
       progressGradient: 'from-cyan-400 to-blue-400',
-      mascot: asset('shared', 'mascot-ocean.png'),
-      helper: asset('shared', 'helper-fish.png'),
+      mascot: '/assets/mascot-ocean.png',
+      helper: '/assets/helper-fish.png',
       themeColor: 'bg-blue-400',
       seedName: 'Whale',
-      bud: asset('ocean', 'collectible-1.png'),
-      balanceAsset: asset('shared', 'balance-whale.png')
+      bud: '/assets/ocean/collectible-1.png',
+      balanceAsset: '/assets/balance-whale.png'
     },
     space: {
       bg: 'bg-slate-900',
@@ -277,12 +277,12 @@ function App() {
       btnColors: ['bg-fuchsia-500 border-fuchsia-700', 'bg-violet-500 border-violet-700', 'bg-pink-500 border-pink-700'],
       progressGradient: 'from-purple-500 to-pink-500',
       textColor: 'text-slate-200',
-      mascot: asset('shared', 'mascot-space.png'),
-      helper: asset('shared', 'helper-stars.png'),
+      mascot: '/assets/mascot-space.png',
+      helper: '/assets/helper-stars.png',
       themeColor: 'bg-purple-600',
       seedName: 'Asteroid',
-      bud: asset('space', 'collectible-1.png'),
-      balanceAsset: asset('shared', 'balance-asteroid.png')
+      bud: '/assets/space/collectible-1.png',
+      balanceAsset: '/assets/balance-asteroid.png'
     }
   };
 
@@ -541,7 +541,7 @@ function App() {
             {problem.num1} {problem.type} {problem.num2} = ?
           </h2>
           <div className={`h-14 flex items-center justify-center transition-all duration-300 ${feedback.message ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-            <img src={feedback.type === 'success' ? asset('shared', 'feedback-success.png') : asset('shared', 'feedback-error.png')} alt={feedback.type} className="w-12 h-12 mr-3 drop-shadow-md" />
+            <img src={feedback.type === 'success' ? '/assets/feedback-success.png' : '/assets/feedback-error.png'} alt={feedback.type} className="w-12 h-12 mr-3 drop-shadow-md" />
             <p className={`text-xl font-black ${feedback.type === 'success' ? 'text-green-500' : 'text-orange-400'}`}>
               {feedback.message}
             </p>
