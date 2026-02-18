@@ -536,13 +536,13 @@ function App() {
       {/* Main Game Area */}
       <main className="flex-1 min-h-0 flex flex-col items-center justify-center w-full max-w-md gap-3 py-1 overflow-hidden">
         
-        <div className={`bg-white rounded-2xl p-4 shadow-lg border-b-4 ${currentTheme.problemBorder} w-full text-center relative z-10 shrink-0 transition-transform ${feedback.type === 'error' ? 'animate-shake' : ''}`}>
-          <h2 className="text-4xl font-black text-stone-700 mb-1">
+        <div className={`bg-white rounded-xl p-2.5 shadow-lg border-b-4 ${currentTheme.problemBorder} w-full text-center relative z-10 shrink-0 transition-transform ${feedback.type === 'error' ? 'animate-shake' : ''}`}>
+          <h2 className="text-2xl font-black text-stone-700 mb-1">
             {problem.num1} {problem.type} {problem.num2} = ?
           </h2>
-          <div className={`h-14 flex items-center justify-center transition-all duration-300 ${feedback.message ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-            <img src={feedback.type === 'success' ? '/assets/feedback-success.png' : '/assets/feedback-error.png'} alt={feedback.type} className="w-12 h-12 mr-3 drop-shadow-md" />
-            <p className={`text-xl font-black ${feedback.type === 'success' ? 'text-green-500' : 'text-orange-400'}`}>
+          <div className={`h-10 flex items-center justify-center transition-all duration-300 ${feedback.message ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+            <img src={feedback.type === 'success' ? '/assets/feedback-success.png' : '/assets/feedback-error.png'} alt={feedback.type} className="w-8 h-8 mr-2 drop-shadow-md" />
+            <p className={`text-sm font-black ${feedback.type === 'success' ? 'text-green-500' : 'text-orange-400'}`}>
               {feedback.message}
             </p>
           </div>
@@ -550,7 +550,7 @@ function App() {
           <button 
             onClick={handleHint}
             disabled={hintedOptionIndex !== null || isAnimating}
-            className={`mt-2 px-3 py-1 rounded-full text-[8px] font-black uppercase transition-all border-b-2 
+            className={`mt-1 px-2 py-0.5 rounded-full text-[7px] font-black uppercase transition-all border-b-2 
             ${hintedOptionIndex !== null 
               ? 'bg-stone-100 text-stone-300 border-stone-200' 
               : 'bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200'}`}
@@ -559,19 +559,19 @@ function App() {
           </button>
         </div>
 
-        <div className="flex gap-2.5 relative z-10 shrink-0 transition-all duration-500 ease-in-out">
+        <div className="flex gap-2 relative z-10 shrink-0 transition-all duration-500 ease-in-out">
           {problem.options.map((option, index) => (
             <button
               key={index}
               onClick={() => handleAnswer(option)}
               disabled={isAnimating}
               className={`
-                rounded-full text-xl font-bold text-white shadow-md
+                rounded-full text-lg font-bold text-white shadow-md
                 transform transition-all duration-500 ease-in-out active:scale-95
                 ${currentTheme.btnColors[index]}
                 ${hintedOptionIndex === index 
                   ? 'opacity-0 scale-0 w-0 h-0 m-0 pointer-events-none p-0 border-0' 
-                  : 'w-14 h-14'}
+                  : 'w-12 h-12'}
               `}
             >
               {hintedOptionIndex === index ? null : option}
@@ -689,12 +689,12 @@ function App() {
       )}
 
       {/* Shared Garden Visuals */}
-      <div className="w-full max-w-md bg-stone-100/90 rounded-t-2xl p-2 border-t-2 border-green-200 min-h-[64px] max-h-[96px] md:max-h-[120px] shrink-0 shadow-lg relative overflow-y-auto">
-        <p className="text-center text-stone-500 text-[8px] font-black uppercase tracking-widest mb-1.5">My Collection</p>
-        <div className="flex flex-wrap justify-center gap-2">
+      <div className="w-full max-w-md bg-stone-100/90 rounded-t-2xl p-1.5 border-t-2 border-green-200 min-h-[48px] max-h-[64px] shrink-0 shadow-lg relative overflow-y-auto">
+        <p className="text-center text-stone-500 text-[7px] font-black uppercase tracking-widest mb-1">My Collection</p>
+        <div className="flex flex-wrap justify-center gap-1.5">
           {garden.length === 0 && <p className="text-stone-400 text-[9px] italic font-medium text-center">Collection is empty!</p>}
           {garden.map((plantImg, i) => (
-            <div key={i} className="w-9 h-9 flex items-center justify-center animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}>
+            <div key={i} className="w-6 h-6 flex items-center justify-center animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}>
               <img src={plantImg} alt="collection item" className="w-full h-full object-contain drop-shadow-sm" />
             </div>
           ))}
