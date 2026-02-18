@@ -1,4 +1,4 @@
-import { createProgressStore } from 'sprouts-engine';
+import { createProgressStore } from '../sprouts-engine';
 
 const progressStore = createProgressStore({
   storageKey: 'math_sprouts_progress',

@@ -1,4 +1,4 @@
-import { createParentSettingsStore } from 'sprouts-engine';
+import { createParentSettingsStore } from '../sprouts-engine';
 
 const parentSettingsStore = createParentSettingsStore({
   storageKey: 'math_sprouts_parent_settings',
