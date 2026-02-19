@@ -477,14 +477,28 @@ function App() {
         <span className="text-sm">⚙️</span>
       </button>
 
-      {/* Theme Toggle - Compact */}
-      <div className="fixed right-2 top-[calc(env(safe-area-inset-top)+0.5rem)] z-40 flex gap-1">
+      {/* Difficulty Sidebar */}
+      <div className="fixed left-2 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-1.5">
+        {['beginner', 'intermediate', 'advanced'].map((d) => (
+          <button
+            key={d}
+            disabled={parentSettings.locks.difficulty || !parentSettings.allowedDifficulties.includes(d)}
+            onClick={() => setDifficulty(d)}
+            className={`w-8 h-8 rounded-full text-[9px] font-black transition-all border ${difficulty === d ? 'bg-stone-900 text-white border-stone-900' : 'bg-white/70 text-stone-600 border-stone-200'} ${!parentSettings.allowedDifficulties.includes(d) ? 'hidden' : ''}`}
+          >
+            {d === 'beginner' ? 'B' : d === 'intermediate' ? 'I' : 'A'}
+          </button>
+        ))}
+      </div>
+
+      {/* Theme Sidebar */}
+      <div className="fixed right-2 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-1.5">
         {['garden', 'ocean', 'space'].map((t) => (
           <button
             key={t}
             disabled={parentSettings.locks.theme || !parentSettings.allowedThemes.includes(t)}
             onClick={() => setTheme(t)}
-            className={`w-6 h-6 rounded-full transition-all ${theme === t ? `${themeConfig[t].themeColor} scale-110 shadow-md` : 'bg-stone-300 opacity-40 scale-90'} ${!parentSettings.allowedThemes.includes(t) ? 'hidden' : ''}`}
+            className={`w-8 h-8 rounded-full transition-all ${theme === t ? `${themeConfig[t].themeColor} scale-110 shadow-md` : 'bg-stone-300 opacity-40 scale-90'} ${!parentSettings.allowedThemes.includes(t) ? 'hidden' : ''}`}
           />
         ))}
       </div>
