@@ -195,7 +195,7 @@ function App() {
   const APP_ID = 'math-sprouts';
 
   // Global Game State
-  const [gameMode, setGameMode] = useState('balance'); 
+  const [gameMode, setGameMode] = useState('arithmetic'); 
   const [difficulty, setDifficulty] = useState('intermediate'); 
   const [theme, setTheme] = useState('garden'); 
   const [problem, setProblem] = useState({ num1: 0, num2: 0, answer: 0, options: [], type: '+' });
