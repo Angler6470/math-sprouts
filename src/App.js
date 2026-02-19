@@ -3,6 +3,7 @@ import { loadProgress, recordAnswer, recordSessionStart, recordSessionEnd } from
 import { loadParentSettings, saveParentSettings } from './lib/parentSettings';
 import { useSessionTimer } from './hooks/useSessionTimer';
 import { generateProblem } from './game/generator';
+import { pack } from './content/math';
 import SplashScreen from './components/SplashScreen';
 import HelpModal from './components/HelpModal';
 
@@ -519,17 +520,20 @@ function App() {
             </div>
             <div className="flex flex-col">
               <h1 className={`text-sm font-black ${currentTheme.accent} leading-none`} style={{ fontFamily: '"Bubblegum Sans", cursive' }}>Math Sprouts</h1>
-              <div className="flex gap-1 mt-0.5">
-                {['balance', 'garden', 'pollinator'].map(m => (
-                  <button 
-                    key={m}
-                    disabled={parentSettings.locks.gameMode || !parentSettings.allowedModes.includes(m)}
-                    onClick={() => setGameMode(m)}
-                    className={`px-1.5 py-0.5 rounded-full text-[7px] font-bold transition-all ${gameMode === m ? 'bg-green-500 text-white' : 'bg-white/70 text-green-700'} ${!parentSettings.allowedModes.includes(m) ? 'hidden' : ''}`}
-                  >
-                    {m[0].toUpperCase()}
-                  </button>
-                ))}
+              <div className="flex flex-col gap-0.5 mt-0.5">
+                <span className="text-[7px] font-bold text-stone-500 uppercase tracking-wide">Game Mode</span>
+                <div className="flex gap-1">
+                  {pack.modes.map(({ key: m, label }) => (
+                    <button 
+                      key={m}
+                      disabled={parentSettings.locks.gameMode || !parentSettings.allowedModes.includes(m)}
+                      onClick={() => setGameMode(m)}
+                      className={`min-w-[60px] px-2 py-1 rounded-full text-[8px] font-bold transition-all ${gameMode === m ? 'bg-green-500 text-white shadow-sm' : 'bg-white/70 text-stone-600'} ${!parentSettings.allowedModes.includes(m) ? 'hidden' : ''}`}
+                    >
+                      {label || m}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -583,20 +587,32 @@ function App() {
                 <div className="absolute bottom-0 w-full h-1/2 bg-blue-300/30 blur-[1px]"></div>
               </div>
               <div className="absolute bottom-[35px] w-full max-w-[280px] h-4 bg-yellow-100 border-2 border-yellow-200 rounded-full transition-transform duration-700 ease-in-out origin-center flex items-center justify-between px-2 shadow-sm" style={{ transform: `rotate(${tiltAngle}deg)` }}>
-                <div className="relative w-28 h-28 -mt-28 -ml-8 flex flex-wrap-reverse gap-0 items-end justify-center p-1">
-                  {[...Array(seeds)].map((_, i) => (
-                    <div key={i} className="w-1/3 flex justify-center items-end h-8">
-                      <img 
-                        src={currentTheme.balanceAsset} 
-                        alt="seed" 
-                        className={`w-10 h-10 ${i === seeds - 1 && isAnimating ? 'animate-fall-lightly' : 'animate-bounce-light'}`} 
-                        style={{ 
-                          animationDelay: i === seeds - 1 && isAnimating ? '0s' : `${i * 0.1}s`, 
-                          transform: `rotate(${-tiltAngle}deg)` 
-                        }} 
-                      />
-                    </div>
-                  ))}
+                <div className="relative w-28 h-32 -mt-32 -ml-8 flex flex-wrap-reverse gap-0 items-end justify-center pb-1">
+                  {[...Array(seeds)].map((_, i) => {
+                    const row = Math.floor((Math.sqrt(1 + 8 * (seeds - i)) - 1) / 2);
+                    const posInRow = i - (seeds - ((row + 1) * (row + 2)) / 2);
+                    const rowWidth = row + 1;
+                    return (
+                      <div 
+                        key={i} 
+                        className="absolute"
+                        style={{
+                          bottom: `${row * 8}px`,
+                          left: `50%`,
+                          transform: `translateX(${(posInRow - rowWidth / 2 + 0.5) * 42}px) rotate(${-tiltAngle}deg)`,
+                        }}
+                      >
+                        <img 
+                          src={currentTheme.balanceAsset} 
+                          alt="seed" 
+                          className={`w-10 h-10 ${i === seeds - 1 && isAnimating ? 'animate-fall-lightly' : 'animate-bounce-light'}`} 
+                          style={{ 
+                            animationDelay: i === seeds - 1 && isAnimating ? '0s' : `${i * 0.1}s`, 
+                          }} 
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="relative w-20 h-20 -mt-20 -mr-4 flex flex-col items-center justify-end pb-1">
                   <img src={currentTargetPlant} alt="target" className="w-16 h-16 object-contain drop-shadow-md transform transition-transform duration-500" style={{ transform: `rotate(${-tiltAngle}deg)` }} />
