@@ -4,9 +4,9 @@ export const pack = {
   type: 'math',
   title: 'Math Sprouts',
   modes: [
-    { key: 'arithmetic', label: 'Arithmetic' },
-    { key: 'sequences', label: 'Sequences' },
-    { key: 'wordproblems', label: 'Word Problems' }
+    { key: 'balance', label: 'Balance' },
+    { key: 'garden', label: 'Grow' },
+    { key: 'pollinator', label: 'Helpers' }
   ],
   themes: ['garden', 'ocean', 'space'],
   difficulties: ['beginner', 'intermediate', 'advanced'],
