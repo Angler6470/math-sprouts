@@ -563,20 +563,22 @@ function App() {
         </div>
 
         {/* Answer Buttons */}
-        <div className="flex gap-2 shrink-0">{problem.options.map((option, index) => (
+        <div className="w-full grid grid-cols-3 gap-2 shrink-0">{problem.options.map((option, index) => (
             <button
               key={index}
               onClick={() => handleAnswer(option)}
               disabled={isAnimating}
-              className={`rounded-full text-lg font-bold text-white shadow-md transform transition-all duration-500 ease-in-out active:scale-95 ${currentTheme.btnColors[index]} ${hintedOptionIndex === index ? 'opacity-0 scale-0 w-0 h-0 m-0 pointer-events-none p-0 border-0' : 'w-12 h-12'}`}
+              className={`rounded-xl px-2 py-3 text-[13px] font-bold text-white shadow-md transform transition-all duration-500 ease-in-out active:scale-95 flex items-center justify-center ${currentTheme.btnColors[index]} ${hintedOptionIndex === index ? 'opacity-0 scale-0 hidden pointer-events-none' : ''}`}
             >
-              {hintedOptionIndex === index ? null : option}
+              <span className="line-clamp-2 text-center leading-tight">
+                {hintedOptionIndex === index ? null : option}
+              </span>
             </button>
           ))}
           <button 
             onClick={handleHint}
             disabled={hintedOptionIndex !== null || isAnimating}
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${hintedOptionIndex !== null ? 'bg-stone-200 text-stone-400' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'}`}
+            className={`rounded-xl flex items-center justify-center transition-all ${hintedOptionIndex !== null ? 'bg-stone-200 text-stone-400' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'}`}
           >
             <span className="text-lg">{hintedOptionIndex !== null ? '✨' : '💡'}</span>
           </button>
