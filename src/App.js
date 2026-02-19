@@ -249,6 +249,7 @@ function App() {
       progressGradient: 'from-green-400 to-yellow-400',
       mascot: '/assets/mascot-garden.png',
       helper: '/assets/helper-bee.png',
+      themeColor: 'bg-green-500',
       seedName: 'Sprout',
       bud: '/assets/garden/collectible-1.png',
       balanceAsset: '/assets/balance-seed.png'
@@ -263,7 +264,7 @@ function App() {
       progressGradient: 'from-cyan-400 to-blue-400',
       mascot: '/assets/mascot-ocean.png',
       helper: '/assets/helper-fish.png',
-      themeColor: 'bg-blue-400',
+      themeColor: 'bg-blue-500',
       seedName: 'Whale',
       bud: '/assets/ocean/collectible-1.png',
       balanceAsset: '/assets/balance-whale.png'
@@ -279,7 +280,7 @@ function App() {
       textColor: 'text-slate-200',
       mascot: '/assets/mascot-space.png',
       helper: '/assets/helper-stars.png',
-      themeColor: 'bg-purple-600',
+      themeColor: 'bg-purple-500',
       seedName: 'Asteroid',
       bud: '/assets/space/collectible-1.png',
       balanceAsset: '/assets/balance-asteroid.png'
