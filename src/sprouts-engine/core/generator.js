@@ -1,5 +1,28 @@
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+// Session-based random seed for better randomization across app restarts
+const SESSION_SEED = Date.now() + Math.random();
+
+// Seeded random number generator for consistent but varied randomization
+let randomSeed = SESSION_SEED;
+const seededRandom = () => {
+  randomSeed = (randomSeed * 9301 + 49297) % 233280;
+  return randomSeed / 233280;
+};
+
+// Fisher-Yates shuffle algorithm for proper randomization
+const shuffle = (arr) => {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRandom() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+// Pick random item with session-based randomness
+const pick = (arr) => {
+  if (!arr || arr.length === 0) return undefined;
+  return arr[Math.floor(seededRandom() * arr.length)];
+};
 
 /**
  * Factory: creates a problem generator function from a content pack.
@@ -38,85 +61,85 @@ function generateMathProblem(level, difficulty) {
   if (difficulty === 'advanced') max = 30;
 
   if (level === 1) {
-    correctAnswer = Math.floor(Math.random() * (max - 1)) + 2;
-    n1 = Math.floor(Math.random() * (correctAnswer - 1)) + 1;
+    correctAnswer = Math.floor(seededRandom() * (max - 1)) + 2;
+    n1 = Math.floor(seededRandom() * (correctAnswer - 1)) + 1;
     n2 = correctAnswer - n1;
   } else if (level === 2) {
     const levelMax = Math.floor(max * 1.5);
-    correctAnswer = Math.floor(Math.random() * (levelMax - 1)) + 2;
-    n1 = Math.floor(Math.random() * (correctAnswer - 1)) + 1;
+    correctAnswer = Math.floor(seededRandom() * (levelMax - 1)) + 2;
+    n1 = Math.floor(seededRandom() * (correctAnswer - 1)) + 1;
     n2 = correctAnswer - n1;
   } else if (level === 3) {
     type = '-';
-    n1 = Math.floor(Math.random() * max) + 5;
-    n2 = Math.floor(Math.random() * n1) + 1;
+    n1 = Math.floor(seededRandom() * max) + 5;
+    n2 = Math.floor(seededRandom() * n1) + 1;
     correctAnswer = n1 - n2;
   } else if (level === 4) {
     type = '-';
-    n1 = Math.floor(Math.random() * max);
-    n2 = Math.floor(Math.random() * max);
+    n1 = Math.floor(seededRandom() * max);
+    n2 = Math.floor(seededRandom() * max);
     correctAnswer = n1 - n2;
   } else if (level === 5) {
     type = '×';
     const multMax = difficulty === 'beginner' ? 5 : difficulty === 'intermediate' ? 9 : 12;
-    n1 = Math.floor(Math.random() * multMax) + 1;
-    n2 = Math.floor(Math.random() * multMax) + 1;
+    n1 = Math.floor(seededRandom() * multMax) + 1;
+    n2 = Math.floor(seededRandom() * multMax) + 1;
     correctAnswer = n1 * n2;
   } else if (level === 6) {
-    const isDiv = Math.random() > 0.5;
+    const isDiv = seededRandom() > 0.5;
     if (isDiv) {
       type = '÷';
       const divMax = difficulty === 'beginner' ? 5 : difficulty === 'intermediate' ? 10 : 12;
-      correctAnswer = Math.floor(Math.random() * divMax) + 1;
-      n2 = Math.floor(Math.random() * divMax) + 1;
+      correctAnswer = Math.floor(seededRandom() * divMax) + 1;
+      n2 = Math.floor(seededRandom() * divMax) + 1;
       n1 = correctAnswer * n2;
     } else {
       type = '×';
       const multMax = difficulty === 'beginner' ? 6 : difficulty === 'intermediate' ? 10 : 15;
-      n1 = Math.floor(Math.random() * multMax) + 1;
-      n2 = Math.floor(Math.random() * multMax) + 1;
+      n1 = Math.floor(seededRandom() * multMax) + 1;
+      n2 = Math.floor(seededRandom() * multMax) + 1;
       correctAnswer = n1 * n2;
     }
   } else if (level === 7) {
-    const isAdd = Math.random() > 0.5;
+    const isAdd = seededRandom() > 0.5;
     type = isAdd ? '+' : '-';
     const mixMax = max * 2;
     if (isAdd) {
-      n1 = Math.floor(Math.random() * mixMax) + 1;
-      n2 = Math.floor(Math.random() * mixMax) + 1;
+      n1 = Math.floor(seededRandom() * mixMax) + 1;
+      n2 = Math.floor(seededRandom() * mixMax) + 1;
       correctAnswer = n1 + n2;
     } else {
-      n1 = Math.floor(Math.random() * mixMax) + mixMax;
-      n2 = Math.floor(Math.random() * mixMax) + 1;
+      n1 = Math.floor(seededRandom() * mixMax) + mixMax;
+      n2 = Math.floor(seededRandom() * mixMax) + 1;
       correctAnswer = n1 - n2;
     }
   } else if (level === 8) {
     type = '×';
-    n1 = difficulty === 'beginner' ? Math.floor(Math.random() * 5) + 5 : Math.floor(Math.random() * 10) + 5;
-    n2 = Math.floor(Math.random() * 10) + 1;
+    n1 = difficulty === 'beginner' ? Math.floor(seededRandom() * 5) + 5 : Math.floor(seededRandom() * 10) + 5;
+    n2 = Math.floor(seededRandom() * 10) + 1;
     correctAnswer = n1 * n2;
   } else {
-    const rand = Math.random();
+    const rand = seededRandom();
     if (rand < 0.25) {
-      type = '+'; n1 = Math.floor(Math.random() * 50); n2 = Math.floor(Math.random() * 50); correctAnswer = n1 + n2;
+      type = '+'; n1 = Math.floor(seededRandom() * 50); n2 = Math.floor(seededRandom() * 50); correctAnswer = n1 + n2;
     } else if (rand < 0.5) {
-      type = '-'; n1 = Math.floor(Math.random() * 100); n2 = Math.floor(Math.random() * 50); correctAnswer = n1 - n2;
+      type = '-'; n1 = Math.floor(seededRandom() * 100); n2 = Math.floor(seededRandom() * 50); correctAnswer = n1 - n2;
     } else if (rand < 0.75) {
-      type = '×'; n1 = Math.floor(Math.random() * 12); n2 = Math.floor(Math.random() * 12); correctAnswer = n1 * n2;
+      type = '×'; n1 = Math.floor(seededRandom() * 12); n2 = Math.floor(seededRandom() * 12); correctAnswer = n1 * n2;
     } else {
-      type = '÷'; correctAnswer = Math.floor(Math.random() * 12) + 1; n2 = Math.floor(Math.random() * 12) + 1; n1 = correctAnswer * n2;
+      type = '÷'; correctAnswer = Math.floor(seededRandom() * 12) + 1; n2 = Math.floor(seededRandom() * 12) + 1; n1 = correctAnswer * n2;
     }
   }
 
   const optionsSet = new Set([correctAnswer]);
   while (optionsSet.size < 3) {
-    const offset = Math.floor(Math.random() * 11) - 5;
+    const offset = Math.floor(seededRandom() * 11) - 5;
     const fake = correctAnswer + offset;
     if (fake !== correctAnswer) optionsSet.add(fake);
-    if (optionsSet.size < 3) optionsSet.add(correctAnswer + (Math.random() > 0.5 ? 10 : -10));
+    if (optionsSet.size < 3) optionsSet.add(correctAnswer + (seededRandom() > 0.5 ? 10 : -10));
   }
   
-  const optionsArray = Array.from(optionsSet).sort(() => Math.random() - 0.5);
+  const optionsArray = shuffle(Array.from(optionsSet));
 
   return { num1: n1, num2: n2, answer: correctAnswer, options: optionsArray, type };
 }

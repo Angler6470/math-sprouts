@@ -206,6 +206,7 @@ function App() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentTargetPlant, setCurrentTargetPlant] = useState('/assets/garden/collectible-1.png');
   const [showResetModal, setShowResetModal] = useState(false);
+  const recentProblemKeysRef = useRef([]);
   const [showSplash, setShowSplash] = useState(() => sessionStorage.getItem('mathsprouts_seen_splash') !== '1');
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [hintedOptionIndex, setHintedOptionIndex] = useState(null);
@@ -376,10 +377,29 @@ function App() {
     saveParentSettings(newSettings);
   };
 
-  // Generate a new problem based on level and difficulty
+  // Generate a new problem based on level and difficulty with duplicate avoidance
   const generateNewProblem = useCallback((currentLevel = level, currentDiff = difficulty) => {
-    const problem = generateProblem({ level: currentLevel, difficulty: currentDiff });
-    setProblem(problem);
+    const recent = recentProblemKeysRef.current;
+    const recentSet = new Set(recent);
+
+    // Generate one candidate problem
+    let candidate = generateProblem({ level: currentLevel, difficulty: currentDiff });
+
+    // Create unique key for math problems (based on the actual equation)
+    let key = `${currentLevel}|${currentDiff}|${candidate.num1}|${candidate.type}|${candidate.num2}|${candidate.answer}`;
+
+    // Try up to 25 times to avoid recent duplicates
+    for (let tries = 0; tries < 25 && recentSet.has(key); tries++) {
+      candidate = generateProblem({ level: currentLevel, difficulty: currentDiff });
+      key = `${currentLevel}|${currentDiff}|${candidate.num1}|${candidate.type}|${candidate.num2}|${candidate.answer}`;
+    }
+
+    // Record this problem key (keep last 8 for 1-in-8 uniqueness)
+    recent.push(key);
+    while (recent.length > 8) recent.shift();
+    recentProblemKeysRef.current = recent;
+
+    setProblem(candidate);
     setFeedback({ message: '', type: '' });
     setHintedOptionIndex(null);
   }, [level, difficulty]);
