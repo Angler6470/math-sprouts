@@ -192,8 +192,6 @@ const ParentSettingsPanel = ({ settings, onUpdate }) => {
  * Main App Component
  */
 function App() {
-  const APP_ID = 'math-sprouts';
-
   // Global Game State
   const [gameMode, setGameMode] = useState('balance');
   const [difficulty, setDifficulty] = useState('intermediate'); 
@@ -628,7 +626,7 @@ function App() {
                         className="absolute"
                         style={{
                           bottom: `${row * 8}px`,
-                          left: `50%`,
+                          left: `25%`,
                           transform: `translateX(${(posInRow - rowWidth / 2 + 0.5) * 42}px) rotate(${-tiltAngle}deg)`,
                         }}
                       >
