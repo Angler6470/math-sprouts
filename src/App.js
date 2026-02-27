@@ -6,6 +6,9 @@ import { generateProblem } from './game/generator';
 import { pack } from './content/math';
 import SplashScreen from './components/SplashScreen';
 import HelpModal from './components/HelpModal';
+import UpdateBanner from './components/UpdateBanner';
+import { track } from './analytics';
+import { APP_NAME, APP_VERSION, BUILD_TIME, formatBuildTime } from './version';
 
 /**
  * Parent Panel Components
@@ -184,6 +187,18 @@ const ParentSettingsPanel = ({ settings, onUpdate }) => {
           ))}
         </div>
       </div>
+
+      <div className="pt-3 border-t border-stone-100">
+        <div className="bg-stone-50 rounded-lg p-2">
+          <p className="text-[9px] font-bold text-stone-400 uppercase tracking-wide mb-1">Version Info</p>
+          <p className="text-[10px] font-black text-stone-600">
+            {APP_NAME} v{APP_VERSION}
+          </p>
+          <p className="text-[8px] text-stone-400 font-bold mt-0.5">
+            Build: {formatBuildTime()}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
@@ -210,6 +225,10 @@ function App() {
   const [hintedOptionIndex, setHintedOptionIndex] = useState(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+  const [hasSeenUpdate, setHasSeenUpdate] = useState(false);
+  const [isGameInProgress, setIsGameInProgress] = useState(false);
+  const updateDismissedRef = useRef(false);
 
   // Parent Controls State
   const [parentSettings, setParentSettings] = useState(loadParentSettings());
@@ -325,6 +344,7 @@ function App() {
   // Initialize data on mount
   useEffect(() => {
     recordSessionStart();
+    track('app_open');
     const loadedSettings = loadParentSettings();
     setParentSettings(loadedSettings);
     // Ensure initial settings respect locks using functional updates
@@ -357,7 +377,46 @@ function App() {
     if (isIOS && !isStandalone) {
       setShowInstallBanner(true);
     }
-  }, []);
+
+    // Update detection: check version on load and visibility change
+    const checkForUpdates = async () => {
+      try {
+        const response = await fetch('/version.json', { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        const data = await response.json();
+        
+        // Compare build times
+        if (data.buildTime && data.buildTime > BUILD_TIME) {
+          if (!hasSeenUpdate && !updateDismissedRef.current) {
+            setShowUpdateBanner(true);
+            setHasSeenUpdate(true);
+            track('update_prompt_shown', { newVersion: data.version });
+          }
+        }
+      } catch (err) {
+        // Silently fail - version.json might not exist on first deploy
+        console.log('Update check skipped:', err.message);
+      }
+    };
+
+    // Initial check after 3 seconds (let app load first)
+    const initialCheckTimer = setTimeout(checkForUpdates, 3000);
+
+    // Check on visibility change (user returns to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !updateDismissedRef.current) {
+        checkForUpdates();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearTimeout(initialCheckTimer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [hasSeenUpdate]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -369,10 +428,62 @@ function App() {
     }
   };
 
+  // Handle update banner actions
+  const handleUpdateRefresh = () => {
+    track('update_applied');
+    setShowUpdateBanner(false);
+    
+    // If service worker exists, update it
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(registration => {
+        if (registration && registration.waiting) {
+          // Tell waiting SW to take over
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          
+          // Listen for controller change and reload
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+              refreshing = true;
+              window.location.reload();
+            }
+          });
+        } else {
+          // No waiting worker, just reload
+          window.location.reload();
+        }
+      });
+    } else {
+      // No service worker, just reload
+      window.location.reload();
+    }
+  };
+
+  const handleUpdateDismiss = () => {
+    updateDismissedRef.current = true;
+    setShowUpdateBanner(false);
+    
+    // Auto-refresh after 60 seconds if not in game
+    setTimeout(() => {
+      if (!isGameInProgress && !document.hidden) {
+        handleUpdateRefresh();
+      }
+    }, 60000);
+    
+    // Also auto-refresh when visibility changes (user returns) if not in game
+    const handleVisibilityForUpdate = () => {
+      if (document.visibilityState === 'visible' && !isGameInProgress) {
+        handleUpdateRefresh();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityForUpdate, { once: true });
+  };
+
   // Update Settings
   const updateSettings = (newSettings) => {
     setParentSettings(newSettings);
     saveParentSettings(newSettings);
+    track('settings_updated');
   };
 
   // Generate a new problem based on level and difficulty with duplicate avoidance
@@ -413,6 +524,9 @@ function App() {
   const handleAnswer = (selected) => {
     const isCorrect = selected === problem.answer;
     
+    // Mark game as in progress
+    setIsGameInProgress(true);
+    
     // Record Progress
     const updatedStats = recordAnswer({ 
       correct: isCorrect, 
@@ -445,6 +559,8 @@ function App() {
           setSeeds(0);
           setCurrentTargetPlant(plantAssetsRef.current[theme][Math.floor(Math.random() * plantAssetsRef.current[theme].length)]);
           setIsAnimating(false);
+          setIsGameInProgress(false);
+          track('game_end', { level: nextLevel });
           generateNewProblem(nextLevel);
         }, 2000);
       } else {
@@ -454,7 +570,8 @@ function App() {
             setShowSessionEnd(true);
             return;
           }
-          setIsAnimating(false); 
+          setIsAnimating(false);
+          setIsGameInProgress(false);
           generateNewProblem(); 
         }, 1000);
       }
@@ -484,14 +601,18 @@ function App() {
   const tiltAngle = 15 - (seeds * 3);
 
   return (
-    <div className={`${currentTheme.bg} flex flex-col items-center p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] font-sans ${currentTheme.textColor || 'text-stone-800'} overflow-hidden relative transition-colors duration-500`} style={{ minHeight: 'calc(var(--app-vh, 1vh) * 100)' }}>
+    <div data-subject="math" className={`${currentTheme.bg} flex flex-col items-center p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] font-sans ${currentTheme.textColor || 'text-stone-800'} overflow-hidden relative transition-colors duration-500`} style={{ minHeight: 'calc(var(--app-vh, 1vh) * 100)' }}>
       {showSplash && (
         <SplashScreen onFinish={() => { sessionStorage.setItem('mathsprouts_seen_splash', '1'); setShowSplash(false); }} />
       )}
       
       {/* Parent Access Button */}
       <button 
-        onClick={() => { setShowParentModal(true); setIsParentAuthenticated(false); }}
+        onClick={() => { 
+          track('settings_open');
+          setShowParentModal(true); 
+          setIsParentAuthenticated(false); 
+        }}
         className="fixed left-2 top-[calc(env(safe-area-inset-top)+0.5rem)] z-40 bg-white/40 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white/60 transition-all border border-white/20"
       >
         <span className="text-sm">⚙️</span>
@@ -506,7 +627,10 @@ function App() {
           <button
             key={d}
             disabled={parentSettings.locks.difficulty || !parentSettings.allowedDifficulties.includes(d)}
-            onClick={() => setDifficulty(d)}
+            onClick={() => {
+              track('difficulty_change', { difficulty: d });
+              setDifficulty(d);
+            }}
             className={`w-8 h-8 rounded-full text-[9px] font-black transition-all border ${difficulty === d ? 'bg-stone-900 text-white border-stone-900' : 'bg-white/70 text-stone-600 border-stone-200'} ${!parentSettings.allowedDifficulties.includes(d) ? 'hidden' : ''}`}
           >
             {d === 'beginner' ? 'B' : d === 'intermediate' ? 'I' : 'A'}
@@ -523,7 +647,10 @@ function App() {
           <button
             key={t}
             disabled={parentSettings.locks.theme || !parentSettings.allowedThemes.includes(t)}
-            onClick={() => setTheme(t)}
+            onClick={() => {
+              track('theme_change', { theme: t });
+              setTheme(t);
+            }}
             className={`w-8 h-8 rounded-full transition-all ${theme === t ? `${themeConfig[t].themeColor} scale-110 shadow-md` : 'bg-stone-300 opacity-40 scale-90'} ${!parentSettings.allowedThemes.includes(t) ? 'hidden' : ''}`}
           />
         ))}
@@ -546,7 +673,10 @@ function App() {
                   <button 
                     key={m}
                     disabled={parentSettings.locks.gameMode || !parentSettings.allowedModes.includes(m)}
-                    onClick={() => setGameMode(m)}
+                    onClick={() => {
+                      track('mode_change', { mode: m });
+                      setGameMode(m);
+                    }}
                     className={`min-w-[60px] px-2 py-1 rounded-full text-[8px] font-bold transition-all ${gameMode === m ? 'bg-green-500 text-white shadow-sm' : 'bg-white/70 text-stone-600'} ${!parentSettings.allowedModes.includes(m) ? 'hidden' : ''}`}
                   >
                     {label || m}
@@ -727,6 +857,14 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Update Banner */}
+      {showUpdateBanner && (
+        <UpdateBanner 
+          onRefresh={handleUpdateRefresh}
+          onDismiss={handleUpdateDismiss}
+        />
       )}
 
       {/* Compact Footer: Collection + Progress */}

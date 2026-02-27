@@ -166,11 +166,11 @@ function generateReadingProblem(mode, theme, difficulty, banks) {
       dCandidates.push(fallback);
     }
 
-    const options = shuffle([correctWord, ...dCandidates]).map(w => w.toLowerCase());
+    const options = shuffle([correctWord, ...dCandidates]).map(w => (w || '').toLowerCase());
     return {
       prompt: `Which word starts with "${letter}"?`,
       options,
-      answer: correctWord.toLowerCase()
+      answer: (correctWord || '').toLowerCase()
     };
   }
 
@@ -179,9 +179,9 @@ function generateReadingProblem(mode, theme, difficulty, banks) {
     const target = pick(sightWordsForDiff)?.toLowerCase() || '';
     if (!target) return { prompt: 'No sight words loaded.', options: [], answer: '' };
     
-    const samePool = sightWordsForDiff.filter(w => w.toLowerCase() !== target).map(w => w.toLowerCase());
+    const samePool = sightWordsForDiff.filter(w => (w || '').toLowerCase() !== target).map(w => (w || '').toLowerCase());
     const neighbourPool = (diffKey === 'advanced' ? SIGHT_WORDS['intermediate'] : SIGHT_WORDS['beginner']) || [];
-    const pool = shuffle([...samePool, ...neighbourPool.map(w => w.toLowerCase())]).filter(w => w !== target);
+    const pool = shuffle([...samePool, ...neighbourPool.map(w => (w || '').toLowerCase())]).filter(w => w !== target);
     
     const candidates = [...new Set(pool)];
     const options = shuffle([target, candidates[0] || pick(sightWordsForDiff), candidates[1] || pick(sightWordsForDiff)].map(w => (w || '').toLowerCase())).slice(0, 3);
@@ -198,11 +198,11 @@ function generateReadingProblem(mode, theme, difficulty, banks) {
     const tpl = pick(stories);
     if (!tpl) return { prompt: 'No stories loaded.', options: [], answer: '' };
 
-    const options = shuffle([tpl.a, ...tpl.d]).map(w => w.toLowerCase());
+    const options = shuffle([(tpl.a || ''), ...(tpl.d || [])]).map(w => (w || '').toLowerCase());
     return {
-      prompt: tpl.t.replace('{__}', '____'),
+      prompt: (tpl.t || '').replace('{__}', '____'),
       options,
-      answer: tpl.a.toLowerCase()
+      answer: (tpl.a || '').toLowerCase()
     };
   }
 
